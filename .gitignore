@@ -1,0 +1,27 @@
+# Internal / non-distributable
+_internal/
+
+# Build artifacts
+dist/
+build/
+
+# Dependencies
+node_modules/
+vendor/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE
+.vscode/
+.idea/
+
+# WordPress
+*.log
+debug.log
+
+# Temp files
+*.tmp
+*.bak

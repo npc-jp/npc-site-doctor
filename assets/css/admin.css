@@ -1,0 +1,540 @@
+/**
+ * NPC WP Healthcheck — 管理画面CSS
+ */
+
+/* 操作ボタンエリア */
+.npc-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.npc-last-run {
+    color: #666;
+    font-style: italic;
+}
+
+/* 診断結果グリッド */
+.npc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+/* 各チェック結果カード */
+.npc-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-left: 4px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 16px;
+}
+
+.npc-card h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+}
+
+.npc-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.npc-card li {
+    padding: 4px 0;
+    font-size: 13px;
+    color: #444;
+}
+
+/* カード内アクションボタン（debug.logクリア等） */
+.npc-card__actions {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    gap: 6px;
+}
+
+.npc-card__action--danger {
+    color: #b91c1c !important;
+    border-color: #fca5a5 !important;
+}
+
+.npc-card__action--danger:hover:not(:disabled) {
+    background: #fef2f2 !important;
+    border-color: #dc3232 !important;
+}
+
+.npc-card__notice {
+    margin-top: 4px;
+    color: #166534;
+    font-size: 12px;
+    font-style: italic;
+}
+
+/* ステータス色（カード左ボーダー） */
+.npc-card--ok {
+    border-left-color: #46b450;
+}
+
+.npc-card--warning {
+    border-left-color: #ffb900;
+}
+
+.npc-card--critical {
+    border-left-color: #dc3232;
+}
+
+.npc-card--unknown {
+    border-left-color: #999;
+}
+
+/* ステータスバッジ */
+.npc-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.npc-badge--ok       { background: #46b450; }
+.npc-badge--warning   { background: #ffb900; color: #23282d; }
+.npc-badge--critical  { background: #dc3232; }
+.npc-badge--unknown   { background: #999; }
+
+/* AIレポート表示 */
+.npc-report-content {
+    margin: 20px 0;
+    line-height: 1.8;
+    font-size: 14px;
+}
+
+/* 総合評価 */
+.npc-report-summary {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-left: 6px solid #46b450;
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.npc-report-summary--ok       { border-left-color: #46b450; background: #f7fdf7; }
+.npc-report-summary--warning   { border-left-color: #ffb900; background: #fffdf5; }
+.npc-report-summary--critical  { border-left-color: #dc3232; background: #fdf7f7; }
+
+.npc-report-summary h2 { margin: 0 0 8px; font-size: 20px; }
+.npc-report-summary p  { margin: 4px 0; }
+
+/* レポートセクション（カード風） */
+.npc-report-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-left: 5px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+}
+
+.npc-report-section--critical  { border-left-color: #dc3232; background: #fdf7f7; }
+.npc-report-section--warning   { border-left-color: #ffb900; background: #fffdf5; }
+.npc-report-section--ok        { border-left-color: #46b450; background: #f7fdf7; }
+.npc-report-section--action    { border-left-color: #0073aa; background: #f0f6fc; }
+
+/* 該当なしセクションはコンパクトに */
+.npc-report-section--empty {
+    padding: 12px 24px;
+    opacity: 0.75;
+}
+
+.npc-report-section h2 {
+    font-size: 16px;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.npc-report-section h3 {
+    font-size: 14px;
+    margin: 16px 0 8px;
+}
+
+.npc-report-section ul {
+    margin: 8px 0 8px 20px;
+}
+
+.npc-report-section li {
+    margin-bottom: 6px;
+}
+
+.npc-report-section p {
+    margin: 8px 0;
+}
+
+/* ローディング */
+#npc-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* =========================================
+   サマリヘッダー（大型スコアカード）
+   ========================================= */
+#npc-summary-header {
+    margin: 24px 0;
+}
+
+.npc-summary-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 28px 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: center;
+}
+
+.npc-summary-card--ok       { border-top: 4px solid #46b450; }
+.npc-summary-card--warning  { border-top: 4px solid #ffb900; }
+.npc-summary-card--critical { border-top: 4px solid #dc3232; }
+
+/* 円形スコアバッジ */
+.npc-score-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    flex-shrink: 0;
+}
+
+.npc-score-circle--ok       { background: linear-gradient(135deg, #46b450 0%, #2d8f34 100%); }
+.npc-score-circle--warning  { background: linear-gradient(135deg, #ffb900 0%, #d19800 100%); }
+.npc-score-circle--critical { background: linear-gradient(135deg, #dc3232 0%, #a32020 100%); }
+.npc-score-circle--unknown  { background: linear-gradient(135deg, #999 0%, #666 100%); }
+
+.npc-score-grade {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+}
+
+.npc-score-label {
+    font-size: 11px;
+    margin-top: 4px;
+    opacity: 0.9;
+    letter-spacing: 1px;
+}
+
+/* 件数サマリー */
+.npc-summary-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.npc-summary-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: #1e293b;
+}
+
+.npc-summary-subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+}
+
+.npc-count-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.npc-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+
+.npc-count-pill__num {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.npc-count-pill--critical { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.npc-count-pill--warning  { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.npc-count-pill--ok       { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+
+.npc-count-pill--zero { opacity: 0.5; }
+
+/* 内訳バー（9項目のビジュアル内訳） */
+.npc-progress-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: #e2e8f0;
+    margin-top: 8px;
+}
+
+.npc-progress-bar__seg {
+    transition: opacity 0.2s;
+}
+
+.npc-progress-bar__seg--critical { background: #dc3232; }
+.npc-progress-bar__seg--warning  { background: #ffb900; }
+.npc-progress-bar__seg--ok       { background: #46b450; }
+
+/* =========================================
+   AIレポート - アクションカード
+   ========================================= */
+.npc-action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.npc-action-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 14px 18px;
+}
+
+.npc-action-card--critical { border-left-color: #dc3232; background: #fef7f7; }
+.npc-action-card--warning  { border-left-color: #ffb900; background: #fffbeb; }
+.npc-action-card--ok       { border-left-color: #46b450; background: #f0fdf4; }
+
+.npc-action-card__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.npc-action-card__body {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.7;
+}
+
+.npc-action-card__body ul {
+    margin: 6px 0 6px 20px;
+}
+
+.npc-action-card__body p {
+    margin: 4px 0;
+}
+
+/* カードホバー効果 */
+.npc-card {
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.npc-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* サマリヘッダー内の日時表示 */
+.npc-summary-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.npc-summary-date {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.npc-summary-date strong {
+    color: #334155;
+    font-weight: 600;
+}
+
+/* =========================================
+   診断履歴アコーディオン
+   ========================================= */
+#npc-history {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.npc-history-note {
+    color: #64748b;
+    font-size: 12px;
+    margin: -4px 0 16px;
+}
+
+#npc-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.npc-history-item {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #cbd5e1;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.npc-history-item--ok       { border-left-color: #46b450; }
+.npc-history-item--warning  { border-left-color: #ffb900; }
+.npc-history-item--critical { border-left-color: #dc3232; }
+
+.npc-history-item[open] {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* アコーディオンサマリバー */
+.npc-history-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition: background 0.15s;
+}
+
+.npc-history-summary::-webkit-details-marker { display: none; }
+.npc-history-summary::marker { content: ''; }
+
+.npc-history-summary:hover {
+    background: #f8fafc;
+}
+
+/* 開閉マーカー（三角） */
+.npc-history-summary::before {
+    content: '▶';
+    font-size: 10px;
+    color: #94a3b8;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.npc-history-item[open] .npc-history-summary::before {
+    transform: rotate(90deg);
+}
+
+/* グレードバッジ（小） */
+.npc-history-grade {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    font-weight: 800;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.npc-history-grade--ok       { background: linear-gradient(135deg, #46b450 0%, #2d8f34 100%); }
+.npc-history-grade--warning  { background: linear-gradient(135deg, #ffb900 0%, #d19800 100%); }
+.npc-history-grade--critical { background: linear-gradient(135deg, #dc3232 0%, #a32020 100%); }
+
+/* 日付 */
+.npc-history-date {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* 件数（3色のピル） */
+.npc-history-counts {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.npc-history-count {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.npc-history-count--critical { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.npc-history-count--warning  { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.npc-history-count--ok       { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+
+/* ダウンロードボタン */
+.npc-history-download {
+    flex-shrink: 0;
+}
+
+/* 展開本体 */
+.npc-history-body {
+    padding: 16px 20px 20px;
+    border-top: 1px solid #e2e8f0;
+    background: #fafbfc;
+}
+
+/* 履歴内のレポートは少しコンパクトに */
+.npc-history-body .npc-report-section {
+    margin-bottom: 10px;
+}
+
+/* レスポンシブ: 狭い画面では縦積み */
+@media (max-width: 782px) {
+    .npc-history-summary {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .npc-history-date {
+        flex: 1 0 100%;
+    }
+
+    .npc-summary-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .npc-score-circle {
+        margin: 0 auto;
+    }
+
+    .npc-summary-head {
+        justify-content: center;
+    }
+}
