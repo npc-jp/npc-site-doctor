@@ -172,13 +172,13 @@ class NPC_SD_Plugin {
         if ( ! isset( $schedules['weekly'] ) ) {
             $schedules['weekly'] = array(
                 'interval' => 7 * DAY_IN_SECONDS,
-                'display'  => '週1回',
+                'display'  => __( 'Once Weekly', 'npc-site-doctor' ),
             );
         }
         if ( ! isset( $schedules['monthly'] ) ) {
             $schedules['monthly'] = array(
                 'interval' => 30 * DAY_IN_SECONDS,
-                'display'  => '月1回',
+                'display'  => __( 'Once Monthly', 'npc-site-doctor' ),
             );
         }
         return $schedules;
@@ -269,12 +269,12 @@ class NPC_SD_Plugin {
      */
     public function handle_save_auto_settings() {
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( '権限がありません。' );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-site-doctor' ) );
         }
         check_admin_referer( 'npc_sd_auto_settings' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_die( '許可されたユーザーではありません。' );
+            wp_die( esc_html__( 'You are not the authorized user for this plugin.', 'npc-site-doctor' ) );
         }
 
         // 早期サニタイズ: bool キャストで unslash 不要に統一
@@ -357,12 +357,22 @@ class NPC_SD_Plugin {
         // 管理者にだけ表示
         if ( ! current_user_can( 'manage_options' ) ) return;
 
+        // Screen guard: show only on this plugin's pages or core dashboard, avoid hijacking other plugins' screens.
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( $screen && strpos( (string) $screen->id, 'npc-site-doctor' ) === false && $screen->id !== 'dashboard' && $screen->id !== 'plugins' ) {
+            return;
+        }
+
         $bound_url = get_option( 'npc_sd_bound_site_url', '' );
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>WP Healthcheck:</strong> ';
-        echo 'このプラグインは <code>' . esc_html( $bound_url ) . '</code> 用にセットアップされています。';
-        echo '別のサイトでは使用できません。再セットアップが必要な場合は、';
-        echo 'データベースの <code>npc_sd_bound_site_url</code> オプションを削除してからプラグインを再有効化してください。';
+        echo '<strong>NPC Site Doctor:</strong> ';
+        printf(
+            /* translators: %s: the original site URL the plugin was bound to */
+            esc_html__( 'This plugin was set up for %s.', 'npc-site-doctor' ),
+            '<code>' . esc_html( $bound_url ) . '</code>'
+        );
+        echo ' ';
+        echo esc_html__( 'It cannot be used on a different site. To re-setup, delete the npc_sd_bound_site_url option from the database and re-activate the plugin.', 'npc-site-doctor' );
         echo '</p></div>';
     }
 
@@ -418,7 +428,7 @@ class NPC_SD_Plugin {
      */
     public function register_log_cpt() {
         register_post_type( NPC_SD_CPT, array(
-            'label'           => 'Healthcheck ログ',
+            'label'           => __( 'Site Doctor Log', 'npc-site-doctor' ),
             'public'          => false,
             'show_ui'         => false,
             'show_in_menu'    => false,
@@ -439,7 +449,11 @@ class NPC_SD_Plugin {
      * @return int|WP_Error 作成した投稿ID or エラー
      */
     public function save_healthcheck_log( $results ) {
-        $title = sprintf( '診断ログ %s', current_time( 'Y-m-d H:i' ) );
+        $title = sprintf(
+            /* translators: %s: timestamp like "2026-05-11 14:32" */
+            __( 'Diagnosis log %s', 'npc-site-doctor' ),
+            current_time( 'Y-m-d H:i' )
+        );
 
         $post_id = wp_insert_post( array(
             'post_type'   => NPC_SD_CPT,
@@ -668,8 +682,8 @@ class NPC_SD_Plugin {
         }
 
         add_menu_page(
-            'WP Healthcheck',
-            'Healthcheck',
+            __( 'NPC Site Doctor', 'npc-site-doctor' ),
+            __( 'Site Doctor', 'npc-site-doctor' ),
             'manage_options',
             'npc-site-doctor',
             array( $this, 'render_dashboard' ),
@@ -679,8 +693,8 @@ class NPC_SD_Plugin {
 
         add_submenu_page(
             'npc-site-doctor',
-            '設定 — WP Healthcheck',
-            '設定',
+            __( 'Settings — NPC Site Doctor', 'npc-site-doctor' ),
+            __( 'Settings', 'npc-site-doctor' ),
             'manage_options',
             'npc-site-doctor-settings',
             array( $this, 'render_settings' )
@@ -735,7 +749,7 @@ class NPC_SD_Plugin {
      */
     public function render_dashboard() {
         if ( ! $this->is_allowed_user() ) {
-            wp_die( 'このページへのアクセス権限がありません。' );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-site-doctor' ) );
         }
 
         // 初回アクセス時に旧optionデータをCPTに移行
@@ -751,7 +765,7 @@ class NPC_SD_Plugin {
      */
     public function render_settings() {
         if ( ! $this->is_allowed_user() ) {
-            wp_die( 'このページへのアクセス権限がありません。' );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-site-doctor' ) );
         }
 
         include NPC_SD_PATH . 'templates/settings.php';
@@ -769,7 +783,7 @@ class NPC_SD_Plugin {
         check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( 'この操作を実行する権限がありません。' );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
         }
 
         $checker = new NPC_SD_Checker();
@@ -800,18 +814,18 @@ class NPC_SD_Plugin {
         check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( 'この操作を実行する権限がありません。' );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
         }
 
         // AI機能が無効化されている（APIキー未設定）場合は早期エラー
         // フロント側で button が非表示でも、念のためサーバー側でも防御する
         if ( ! self::is_ai_available() ) {
-            wp_send_json_error( 'AIレポート機能は無効です。wp-config.php に NPC_SD_API_KEY を設定するか、npc保守契約をご利用ください。' );
+            wp_send_json_error( esc_html__( 'AI report feature is disabled. Define NPC_SD_API_KEY in wp-config.php to enable it.', 'npc-site-doctor' ) );
         }
 
         $results = get_option( 'npc_sd_last_results', array() );
         if ( empty( $results ) ) {
-            wp_send_json_error( '先に診断を実行してください。' );
+            wp_send_json_error( esc_html__( 'Please run a diagnosis first.', 'npc-site-doctor' ) );
         }
 
         $reporter = new NPC_SD_AI_Reporter();
@@ -845,22 +859,22 @@ class NPC_SD_Plugin {
         check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( 'この操作を実行する権限がありません。' );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
         }
 
         // 念のため capability も確認（二重防御）
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( '管理者権限が必要です。' );
+            wp_send_json_error( esc_html__( 'Administrator permission is required.', 'npc-site-doctor' ) );
         }
 
         $log_file = WP_CONTENT_DIR . '/debug.log';
 
         if ( ! file_exists( $log_file ) ) {
-            wp_send_json_error( 'debug.logが存在しません。' );
+            wp_send_json_error( esc_html__( 'debug.log does not exist.', 'npc-site-doctor' ) );
         }
 
         if ( ! is_writable( $log_file ) ) {
-            wp_send_json_error( 'debug.logへの書き込み権限がありません。FTPでパーミッションを確認してください。' );
+            wp_send_json_error( esc_html__( 'debug.log is not writable. Please check the file permissions via FTP.', 'npc-site-doctor' ) );
         }
 
         $before_size = filesize( $log_file );
@@ -869,13 +883,17 @@ class NPC_SD_Plugin {
         $result = file_put_contents( $log_file, '' );
 
         if ( $result === false ) {
-            wp_send_json_error( 'debug.logのクリアに失敗しました。' );
+            wp_send_json_error( esc_html__( 'Failed to clear debug.log.', 'npc-site-doctor' ) );
         }
 
         wp_send_json_success( array(
             'bytes_cleared'    => (int) $before_size,
             'formatted_size'   => size_format( $before_size, 2 ),
-            'message'          => sprintf( '%s を削除しました', size_format( $before_size, 2 ) ),
+            'message'          => sprintf(
+                /* translators: %s: byte size like "1.2 KB" */
+                __( 'Cleared %s.', 'npc-site-doctor' ),
+                size_format( $before_size, 2 )
+            ),
         ) );
     }
 
@@ -887,16 +905,16 @@ class NPC_SD_Plugin {
         check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( 'この操作を実行する権限がありません。' );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( '管理者権限が必要です。' );
+            wp_send_json_error( esc_html__( 'Administrator permission is required.', 'npc-site-doctor' ) );
         }
 
         $email = $this->get_notify_email();
         if ( empty( $email ) ) {
-            wp_send_json_error( '通知先メールアドレスが設定されていません。' );
+            wp_send_json_error( esc_html__( 'Notification email address is not configured.', 'npc-site-doctor' ) );
         }
 
         // ダミーの診断結果とissueを作成
@@ -910,20 +928,24 @@ class NPC_SD_Plugin {
         $dummy_issues = array(
             array(
                 'key'    => 'test_notification',
-                'label'  => 'これはテスト通知です（実際の問題ではありません）',
-                'detail' => "自動診断の通知機能が正しく動作するかを確認するためのテストメールです。\n本番では、以下のような問題を検出したときにこのメールが届きます：\n  - ファイル改ざん/不審コード検出\n  - uploads内の不審PHPファイル\n  - SSL期限切れ間近\n  - サイトヘルスの致命的問題",
+                'label'  => __( 'This is a test notification (not an actual issue).', 'npc-site-doctor' ),
+                'detail' => __( "This is a test email used to confirm that the automated notification feature works correctly.\nIn production, this email is sent when issues like the following are detected:\n  - File tampering / suspicious code\n  - Suspicious PHP files in the uploads directory\n  - SSL certificate expiring soon\n  - Critical Site Health issues", 'npc-site-doctor' ),
             ),
         );
 
         $sent = NPC_SD_Notifier::send( $email, $dummy_results, $dummy_issues, '' );
 
         if ( ! $sent ) {
-            wp_send_json_error( 'メール送信に失敗しました。WordPressのメール設定を確認してください。' );
+            wp_send_json_error( esc_html__( 'Failed to send email. Please check the WordPress mail configuration.', 'npc-site-doctor' ) );
         }
 
         wp_send_json_success( array(
             'email'   => $email,
-            'message' => sprintf( '%s にテストメールを送信しました。受信できるか確認してください。', $email ),
+            'message' => sprintf(
+                /* translators: %s: destination email address */
+                __( 'A test email was sent to %s. Please verify that it was received.', 'npc-site-doctor' ),
+                $email
+            ),
         ) );
     }
 }

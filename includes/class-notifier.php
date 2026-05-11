@@ -26,12 +26,12 @@ class NPC_SD_Notifier {
             $details = array();
             foreach ( array_merge( $fi['modified_files'] ?? array(), $fi['suspect_files'] ?? array() ) as $f ) {
                 if ( ! empty( $f['has_danger'] ) ) {
-                    $details[] = $f['file'] . '（' . implode( ',', $f['danger_patterns'] ?? array() ) . '）';
+                    $details[] = $f['file'] . ' (' . implode( ',', $f['danger_patterns'] ?? array() ) . ')';
                 }
             }
             $issues[] = array(
                 'key'    => 'file_integrity_danger',
-                'label'  => 'ファイル改ざんの疑い（不審コード検出）',
+                'label'  => __( 'Possible file tampering (suspicious code detected)', 'npc-site-doctor' ),
                 'detail' => implode( "\n", $details ),
             );
         }
@@ -41,7 +41,7 @@ class NPC_SD_Notifier {
         if ( ! empty( $sf['suspicious_count'] ) && $sf['suspicious_count'] > 0 ) {
             $issues[] = array(
                 'key'    => 'suspicious_files',
-                'label'  => 'uploads内に不審なPHPファイル',
+                'label'  => __( 'Suspicious PHP files in uploads directory', 'npc-site-doctor' ),
                 'detail' => implode( "\n", array_slice( $sf['suspicious_files'] ?? array(), 0, 10 ) ),
             );
         }
@@ -50,11 +50,16 @@ class NPC_SD_Notifier {
         $ssl = $results['ssl_certificate'] ?? array();
         if ( ( $ssl['status'] ?? '' ) === 'critical' ) {
             $detail = isset( $ssl['days_left'] )
-                ? "残り{$ssl['days_left']}日（期限: {$ssl['expires_at']}）"
+                ? sprintf(
+                    /* translators: 1: days remaining until expiry, 2: expiry date in YYYY-MM-DD */
+                    __( '%1$d days remaining (expires: %2$s)', 'npc-site-doctor' ),
+                    (int) $ssl['days_left'],
+                    $ssl['expires_at']
+                )
                 : ( $ssl['note'] ?? '' );
             $issues[] = array(
                 'key'    => 'ssl_expiring',
-                'label'  => 'SSL証明書の期限が近い',
+                'label'  => __( 'SSL certificate is expiring soon', 'npc-site-doctor' ),
                 'detail' => $detail,
             );
         }
@@ -68,7 +73,11 @@ class NPC_SD_Notifier {
             }
             $issues[] = array(
                 'key'    => 'site_health_critical',
-                'label'  => "サイトヘルスの致命的問題 {$sh['critical_count']}件",
+                'label'  => sprintf(
+                    /* translators: %d: number of critical Site Health issues */
+                    __( 'Site Health critical issues: %d', 'npc-site-doctor' ),
+                    (int) $sh['critical_count']
+                ),
                 'detail' => implode( "\n", $labels ),
             );
         }
@@ -95,12 +104,22 @@ class NPC_SD_Notifier {
         $admin_url   = admin_url( 'admin.php?page=npc-site-doctor' );
         $count       = count( $issues );
 
-        $subject = sprintf( '[WP Healthcheck] %s で%d件の重大な問題を検出', $site_name, $count );
+        $subject = sprintf(
+            /* translators: 1: site name, 2: number of critical issues */
+            __( '[NPC Site Doctor] %1$s detected %2$d critical issue(s)', 'npc-site-doctor' ),
+            $site_name,
+            $count
+        );
 
         $lines   = array();
-        $lines[] = sprintf( '%s（%s）で自動診断を実行したところ、対応が必要な問題が見つかりました。', $site_name, $site_url );
+        $lines[] = sprintf(
+            /* translators: 1: site name, 2: site URL */
+            __( 'An automated health-check on %1$s (%2$s) found issues that need attention.', 'npc-site-doctor' ),
+            $site_name,
+            $site_url
+        );
         $lines[] = '';
-        $lines[] = '── 検出された問題 ──';
+        $lines[] = '── ' . __( 'Detected issues', 'npc-site-doctor' ) . ' ──';
 
         foreach ( $issues as $i => $issue ) {
             $num = $i + 1;
@@ -114,13 +133,13 @@ class NPC_SD_Notifier {
         }
 
         $lines[] = '';
-        $lines[] = '── 対応方法 ──';
-        $lines[] = '詳細レポートは管理画面からご確認ください:';
+        $lines[] = '── ' . __( 'How to respond', 'npc-site-doctor' ) . ' ──';
+        $lines[] = __( 'See the full report in the admin dashboard:', 'npc-site-doctor' );
         $lines[] = $admin_url;
 
         if ( ! empty( $ai_report ) ) {
             $lines[] = '';
-            $lines[] = '── AIによる診断レポート ──';
+            $lines[] = '── ' . __( 'AI diagnostic report', 'npc-site-doctor' ) . ' ──';
             // AIレポートからタグを除去してプレーンテキスト化
             $plain = self::ai_report_to_plain( $ai_report );
             $lines[] = $plain;
@@ -128,8 +147,8 @@ class NPC_SD_Notifier {
 
         $lines[] = '';
         $lines[] = '---';
-        $lines[] = 'このメールは NPC WP Healthcheck の自動診断から送信されました。';
-        $lines[] = '通知を止めるには、管理画面 > Healthcheck > 設定 から自動診断をOFFにしてください。';
+        $lines[] = __( 'This email was sent by the NPC Site Doctor automated health-check.', 'npc-site-doctor' );
+        $lines[] = __( 'To stop these notifications, go to NPC Site Doctor > Settings and disable automatic diagnostics.', 'npc-site-doctor' );
 
         $body = implode( "\n", $lines );
 

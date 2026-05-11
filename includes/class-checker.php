@@ -96,8 +96,8 @@ class NPC_SD_Checker {
 
                 $updates_needed[] = array(
                     'name'            => $name,
-                    'current_version' => $all_plugins[ $plugin_file ]['Version'] ?? '不明',
-                    'new_version'     => $plugin_data->new_version ?? '不明',
+                    'current_version' => $all_plugins[ $plugin_file ]['Version'] ?? __( 'unknown', 'npc-site-doctor' ),
+                    'new_version'     => $plugin_data->new_version ?? __( 'unknown', 'npc-site-doctor' ),
                 );
             }
         }
@@ -190,7 +190,7 @@ class NPC_SD_Checker {
             return array(
                 'exists' => false,
                 'status' => 'ok',
-                'note'   => 'debug.logが存在しません（WP_DEBUGが無効の可能性）',
+                'note'   => __( 'debug.log does not exist (WP_DEBUG may be disabled).', 'npc-site-doctor' ),
                 'errors' => array(),
             );
         }
@@ -262,7 +262,7 @@ class NPC_SD_Checker {
         if ( is_wp_error( $response ) ) {
             return array(
                 'status' => 'unknown',
-                'note'   => 'WordPress.org APIに接続できませんでした',
+                'note'   => __( 'Could not connect to WordPress.org API.', 'npc-site-doctor' ),
                 'modified_files' => array(),
             );
         }
@@ -272,7 +272,7 @@ class NPC_SD_Checker {
         if ( empty( $body['checksums'] ) ) {
             return array(
                 'status' => 'unknown',
-                'note'   => 'チェックサムデータが取得できませんでした',
+                'note'   => __( 'Could not retrieve checksum data.', 'npc-site-doctor' ),
                 'modified_files' => array(),
             );
         }
@@ -361,11 +361,11 @@ class NPC_SD_Checker {
         // ノート生成
         $note = '';
         if ( $has_any_danger ) {
-            $note = '不審なコードパターン（eval, base64_decode等）が検出されました。改ざんの可能性が高いため、早急な確認が必要です。';
+            $note = __( 'Suspicious code patterns (eval, base64_decode, etc.) were detected. There is a high possibility of tampering, and immediate verification is required.', 'npc-site-doctor' );
         } elseif ( ! empty( $suspect_files ) && empty( $modified_files ) ) {
-            $note = 'チェックサムのずれがありますが、不審なコード（eval, base64_decode等）は検出されませんでした。ロケールやWP自動更新による正常な差異の可能性が高いです。';
+            $note = __( 'Checksum mismatches were found, but no suspicious code (eval, base64_decode, etc.) was detected. This is likely a normal difference caused by locale or automatic WP updates.', 'npc-site-doctor' );
         } elseif ( ! empty( $modified_files ) ) {
-            $note = 'コアファイルにチェックサムのずれがあります。不審なコードは検出されませんでしたが、意図しない変更の可能性があります。';
+            $note = __( 'Core files have checksum mismatches. No suspicious code was detected, but unintended changes may be present.', 'npc-site-doctor' );
         }
 
         return array(
@@ -398,32 +398,32 @@ class NPC_SD_Checker {
 
         // 改ざんでよく使われる危険パターン
         $danger_patterns = array(
-            'eval('                  => 'eval() — 文字列をPHPコードとして実行する関数。正規のWPコアでは使われない',
-            'base64_decode('         => 'base64_decode() — エンコードされた不審コードを隠すために悪用される',
-            'gzinflate('             => 'gzinflate() — 圧縮された悪意あるコードの解凍に使われる',
-            'str_rot13('             => 'str_rot13() — コードの難読化に使われる',
+            'eval('                  => __( 'eval() — executes a string as PHP code. Not used in legitimate WP core.', 'npc-site-doctor' ),
+            'base64_decode('         => __( 'base64_decode() — often abused to hide encoded malicious code.', 'npc-site-doctor' ),
+            'gzinflate('             => __( 'gzinflate() — used to decompress malicious payloads.', 'npc-site-doctor' ),
+            'str_rot13('             => __( 'str_rot13() — used for code obfuscation.', 'npc-site-doctor' ),
             'preg_replace'           => false, // 単体では正規利用が多いのでスキップ
-            'assert('                => 'assert() — eval相当の危険な関数',
-            'create_function('       => 'create_function() — 動的にコードを生成する非推奨関数',
+            'assert('                => __( 'assert() — eval-equivalent dangerous function.', 'npc-site-doctor' ),
+            'create_function('       => __( 'create_function() — deprecated function that builds code dynamically.', 'npc-site-doctor' ),
             'call_user_func('        => false, // 正規利用が多い
-            'shell_exec('            => 'shell_exec() — サーバー上でシェルコマンドを実行',
-            'passthru('              => 'passthru() — 外部コマンドの実行',
+            'shell_exec('            => __( 'shell_exec() — executes a shell command on the server.', 'npc-site-doctor' ),
+            'passthru('              => __( 'passthru() — runs external commands.', 'npc-site-doctor' ),
             'system('                => false, // 誤検知が多いのでスキップ
             '$$'                     => false, // 可変変数は正規利用が多い
             'file_put_contents('     => false, // 正規利用あり
-            'chmod('                 => 'chmod() — ファイルのパーミッション変更。コアファイルにあるべきでない',
-            'error_reporting(0)'     => 'error_reporting(0) — エラー表示を意図的に隠す',
+            'chmod('                 => __( 'chmod() — changes file permissions. Should not appear in core files.', 'npc-site-doctor' ),
+            'error_reporting(0)'     => __( 'error_reporting(0) — intentionally hides error output.', 'npc-site-doctor' ),
             '@ini_set'               => false, // 正規利用あり
         );
 
         // 難読化パターン（正規表現で検出）
         $regex_patterns = array(
             '/\\\\x[0-9a-f]{2}.*\\\\x[0-9a-f]{2}.*\\\\x[0-9a-f]{2}/i'
-                => '16進エスケープの連続 — コードの難読化によく使われるパターン',
+                => __( 'Consecutive hex escapes — a common code obfuscation pattern.', 'npc-site-doctor' ),
             '/\$[a-zA-Z_]+\s*=\s*["\'][A-Za-z0-9+\/=]{100,}["\']/'
-                => '長いBase64文字列の代入 — エンコードされた悪意あるコードの可能性',
+                => __( 'Long Base64 string assignment — possible encoded malicious payload.', 'npc-site-doctor' ),
             '/\$[a-zA-Z_]+\(\s*\$[a-zA-Z_]+\s*\(/'
-                => '変数関数のネスト呼び出し — 動的コード実行の難読化パターン',
+                => __( 'Nested variable function call — dynamic code execution obfuscation pattern.', 'npc-site-doctor' ),
         );
 
         // 文字列パターンの検出
@@ -673,7 +673,7 @@ class NPC_SD_Checker {
         if ( strpos( $site_url, 'https://' ) !== 0 ) {
             return array(
                 'status' => 'warning',
-                'note'   => 'サイトがHTTPSを使用していません',
+                'note'   => __( 'Site is not using HTTPS.', 'npc-site-doctor' ),
             );
         }
 
@@ -699,7 +699,11 @@ class NPC_SD_Checker {
         if ( ! $stream ) {
             return array(
                 'status' => 'unknown',
-                'note'   => "SSL接続に失敗: {$errstr}",
+                'note'   => sprintf(
+                    /* translators: %s: SSL error message from stream_socket_client */
+                    __( 'SSL connection failed: %s', 'npc-site-doctor' ),
+                    $errstr
+                ),
             );
         }
 
@@ -710,7 +714,7 @@ class NPC_SD_Checker {
         if ( ! $cert ) {
             return array(
                 'status' => 'unknown',
-                'note'   => '証明書の解析に失敗しました',
+                'note'   => __( 'Failed to parse certificate.', 'npc-site-doctor' ),
             );
         }
 
@@ -727,7 +731,7 @@ class NPC_SD_Checker {
 
         return array(
             'status'     => $status,
-            'issuer'     => $cert['issuer']['O'] ?? '不明',
+            'issuer'     => $cert['issuer']['O'] ?? __( 'unknown', 'npc-site-doctor' ),
             'expires_at' => date( 'Y-m-d', $expires_at ),
             'days_left'  => $days_left,
         );
