@@ -236,90 +236,91 @@ class NPC_SD_AI_Reporter {
      * (this plugin's primary user base reads Japanese reports).
      */
     private function build_prompt( $diagnosis_text ) {
-        return <<<PROMPT
-You are a WordPress maintenance engineer.
-Analyze the site diagnosis result below and write a maintenance report **in Japanese** (日本語で出力).
-
-## Important: severity rules
-Each section in the diagnosis has "status: ok / warning / critical".
-Your report must follow these status values exactly. Do not upgrade or downgrade severity on your own.
-- ok      => green (normal)
-- warning => yellow (caution)
-- critical => red (action needed)
-
-## Output format (strict)
-Use the following format. The `[STATUS:xx]` tags are required.
-
-```
-[SUMMARY]
-総合評価: X (A〜D)
-(brief one-line comment in Japanese)
-[/SUMMARY]
-
-[SECTION:critical]
-## 今すぐ対応が必要な項目
-(critical items. If none, write 「該当なし」.)
-[/SECTION]
-
-[SECTION:warning]
-## 早めの対応を推奨する項目
-(warning items. If none, write 「該当なし」.)
-[/SECTION]
-
-[SECTION:ok]
-## 問題なしの項目
-(ok items.)
-[/SECTION]
-
-[SECTION:action]
-## 具体的な対応手順
-(Per-item action steps. Prefix each item heading with [STATUS:critical] or [STATUS:warning].)
-[/SECTION]
-```
-
-## Writing guidelines
-- Write in plain Japanese understandable to non-engineers.
-- When using technical terms, add a short explanation.
-- Make action steps concrete (e.g. "Go to <screen> and click <button>").
-- Even when there is no issue, explicitly say "正常です" so the reader is reassured.
-- Prefix each item label with [STATUS:ok] / [STATUS:warning] / [STATUS:critical].
-- When suggesting WordPress admin operations, verify the operation is actually possible. For example, the theme editor only edits existing files; creating new files needs FTP or a file manager.
-- Only suggest "do X" if you have confirmed WordPress's standard UI actually supports X.
-
-## Items NOT recommended on running sites (important)
-The following look like "best practices" but should not be casually recommended on running sites.
-Show a warning, but in the warning body **always add a sentence saying "運用中サイトでは現状維持を推奨します"**.
-Do not write concrete operation steps like "投稿名に変更してください" or "カスタム構造を選択してください".
-
-### Permalink structure changes
-Example wording (in warning section):
-```
-[STATUS:warning] パーマリンク設定について
-現在のURL構造に投稿名が含まれていません。
-ただし、運用中サイトでのパーマリンク変更は既存記事のURL変更によりSEO評価リセット・外部リンク切れ・ブックマーク失効のリスクがあるため、現状維持を推奨します。SEO面の改善は他の項目（コンテンツ・内部リンク・サイト速度）で対応するのが安全です。
-```
-Do **not** include permalinks in [SECTION:action] (no action needed since we recommend status-quo).
-
-### Theme updates
-At the end of the warning body, always add: "カスタム改修されている可能性があるため、現状維持を推奨します". Do not write action steps.
-
-### Casual deletion of "suspicious files"
-At the end of the warning body, add: "ファイル内容を確認してから判断してください。プラグイン正規ファイル（Ajax Load More の alm_templates / WP STAGING の index.php / AIOS の firewall-rules 等）の場合は削除しないこと".
-
-### Database optimization plugins
-Do not mention them at all unless they appear in the diagnosis.
-
-## Items the client typically cannot fix (server-side constraints)
-The following are usually outside the client's control on shared hosting. Even if reported, treat them as "low priority" and **do not write action steps**:
-- **AVIF image format not supported**: depends on the server's PHP-GD / Imagick. Not controllable on shared hosting. WebP is sufficient in practice, so status-quo is fine.
-- **HTTP/2 / HTTP/3 not supported**: depends on the hosting provider.
-- **OPcache settings**: depends on the hosting provider.
-- **memory_limit / max_execution_time caps**: depends on shared hosting plan.
-
-For these, say something like "サーバー会社の今後のアップデートで対応される可能性があります" so you do not alarm the client unnecessarily.
-
-## Diagnosis result
-{$diagnosis_text}
-PROMPT;
+        $lines = array(
+            'You are a WordPress maintenance engineer.',
+            'Analyze the site diagnosis result below and write a maintenance report **in Japanese** (日本語で出力).',
+            '',
+            '## Important: severity rules',
+            'Each section in the diagnosis has "status: ok / warning / critical".',
+            'Your report must follow these status values exactly. Do not upgrade or downgrade severity on your own.',
+            '- ok      => green (normal)',
+            '- warning => yellow (caution)',
+            '- critical => red (action needed)',
+            '',
+            '## Output format (strict)',
+            'Use the following format. The `[STATUS:xx]` tags are required.',
+            '',
+            '```',
+            '[SUMMARY]',
+            '総合評価: X (A〜D)',
+            '(brief one-line comment in Japanese)',
+            '[/SUMMARY]',
+            '',
+            '[SECTION:critical]',
+            '## 今すぐ対応が必要な項目',
+            '(critical items. If none, write 「該当なし」.)',
+            '[/SECTION]',
+            '',
+            '[SECTION:warning]',
+            '## 早めの対応を推奨する項目',
+            '(warning items. If none, write 「該当なし」.)',
+            '[/SECTION]',
+            '',
+            '[SECTION:ok]',
+            '## 問題なしの項目',
+            '(ok items.)',
+            '[/SECTION]',
+            '',
+            '[SECTION:action]',
+            '## 具体的な対応手順',
+            '(Per-item action steps. Prefix each item heading with [STATUS:critical] or [STATUS:warning].)',
+            '[/SECTION]',
+            '```',
+            '',
+            '## Writing guidelines',
+            '- Write in plain Japanese understandable to non-engineers.',
+            '- When using technical terms, add a short explanation.',
+            '- Make action steps concrete (e.g. "Go to <screen> and click <button>").',
+            '- Even when there is no issue, explicitly say "正常です" so the reader is reassured.',
+            '- Prefix each item label with [STATUS:ok] / [STATUS:warning] / [STATUS:critical].',
+            '- When suggesting WordPress admin operations, verify the operation is actually possible. For example, the theme editor only edits existing files; creating new files needs FTP or a file manager.',
+            '- Only suggest "do X" if you have confirmed WordPress\'s standard UI actually supports X.',
+            '',
+            '## Items NOT recommended on running sites (important)',
+            'The following look like "best practices" but should not be casually recommended on running sites.',
+            'Show a warning, but in the warning body **always add a sentence saying "運用中サイトでは現状維持を推奨します"**.',
+            'Do not write concrete operation steps like "投稿名に変更してください" or "カスタム構造を選択してください".',
+            '',
+            '### Permalink structure changes',
+            'Example wording (in warning section):',
+            '```',
+            '[STATUS:warning] パーマリンク設定について',
+            '現在のURL構造に投稿名が含まれていません。',
+            'ただし、運用中サイトでのパーマリンク変更は既存記事のURL変更によりSEO評価リセット・外部リンク切れ・ブックマーク失効のリスクがあるため、現状維持を推奨します。SEO面の改善は他の項目（コンテンツ・内部リンク・サイト速度）で対応するのが安全です。',
+            '```',
+            'Do **not** include permalinks in [SECTION:action] (no action needed since we recommend status-quo).',
+            '',
+            '### Theme updates',
+            'At the end of the warning body, always add: "カスタム改修されている可能性があるため、現状維持を推奨します". Do not write action steps.',
+            '',
+            '### Casual deletion of "suspicious files"',
+            'At the end of the warning body, add: "ファイル内容を確認してから判断してください。プラグイン正規ファイル（Ajax Load More の alm_templates / WP STAGING の index.php / AIOS の firewall-rules 等）の場合は削除しないこと".',
+            '',
+            '### Database optimization plugins',
+            'Do not mention them at all unless they appear in the diagnosis.',
+            '',
+            '## Items the client typically cannot fix (server-side constraints)',
+            'The following are usually outside the client\'s control on shared hosting. Even if reported, treat them as "low priority" and **do not write action steps**:',
+            '- **AVIF image format not supported**: depends on the server\'s PHP-GD / Imagick. Not controllable on shared hosting. WebP is sufficient in practice, so status-quo is fine.',
+            '- **HTTP/2 / HTTP/3 not supported**: depends on the hosting provider.',
+            '- **OPcache settings**: depends on the hosting provider.',
+            '- **memory_limit / max_execution_time caps**: depends on shared hosting plan.',
+            '',
+            'For these, say something like "サーバー会社の今後のアップデートで対応される可能性があります" so you do not alarm the client unnecessarily.',
+            '',
+            '## Diagnosis result',
+            $diagnosis_text,
+        );
+        return implode( "\n", $lines );
     }
 }
