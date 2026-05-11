@@ -277,7 +277,8 @@ class NPC_SD_Plugin {
             wp_die( '許可されたユーザーではありません。' );
         }
 
-        $enabled  = ! empty( $_POST['auto_enabled'] );
+        // 早期サニタイズ: bool キャストで unslash 不要に統一
+        $enabled  = isset( $_POST['auto_enabled'] ) ? (bool) $_POST['auto_enabled'] : false;
         $schedule = isset( $_POST['auto_schedule'] ) ? sanitize_text_field( wp_unslash( $_POST['auto_schedule'] ) ) : 'weekly';
         $email    = isset( $_POST['notify_email'] ) ? sanitize_email( wp_unslash( $_POST['notify_email'] ) ) : '';
 

@@ -169,7 +169,7 @@ class NPC_SD_Checker {
     private function check_php_version() {
         return array(
             'php_version'     => phpversion(),
-            'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? '不明',
+            'server_software' => isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) ) : '',
             'max_memory'      => ini_get( 'memory_limit' ),
             'max_upload'      => ini_get( 'upload_max_filesize' ),
             'max_post'        => ini_get( 'post_max_size' ),

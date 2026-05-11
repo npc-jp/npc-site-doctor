@@ -31,7 +31,11 @@ $schedule_labels = array(
 );
 ?>
 
-<?php if ( isset( $_GET['settings-updated'] ) && $_GET['settings-updated'] === 'true' ) : ?>
+<?php
+// 早期サニタイズ: sanitize_key で wrap してから判定
+$settings_updated = isset( $_GET['settings-updated'] ) ? sanitize_key( wp_unslash( $_GET['settings-updated'] ) ) : '';
+?>
+<?php if ( $settings_updated === 'true' ) : ?>
     <div class="notice notice-success is-dismissible"><p>設定を保存しました。</p></div>
 <?php endif; ?>
 
