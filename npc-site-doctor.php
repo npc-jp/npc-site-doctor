@@ -724,9 +724,16 @@ class NPC_SD_Plugin {
         wp_enqueue_script(
             'npc-site-doctor-admin',
             NPC_SD_URL . 'assets/js/admin.js',
-            array( 'jquery' ),
+            array( 'jquery', 'wp-i18n' ),
             NPC_SD_VERSION,
             true
+        );
+
+        // i18n: JS の `__()` 呼び出しに翻訳ファイル(languages/*.json)を結び付ける
+        wp_set_script_translations(
+            'npc-site-doctor-admin',
+            'npc-site-doctor',
+            NPC_SD_PATH . 'languages'
         );
 
         // 診断履歴をJSに渡す（ダッシュボードHealthcheck画面でのみ）
@@ -736,7 +743,7 @@ class NPC_SD_Plugin {
             $history = $this->get_healthcheck_logs();
         }
 
-        wp_localize_script( 'npc-site-doctor-admin', 'npcHealthcheck', array(
+        wp_localize_script( 'npc-site-doctor-admin', 'npcSiteDoctor', array(
             'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
             'nonce'    => wp_create_nonce( 'npc_sd_nonce' ),
             'history'  => $history,

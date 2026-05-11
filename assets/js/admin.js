@@ -1,10 +1,23 @@
 /**
- * NPC WP Healthcheck — 管理画面JS
+ * NPC Site Doctor — admin JS
  */
 (function($) {
     'use strict';
 
-    // 現在画面に表示している診断（今回分 or 前回分の復元）
+    // wp.i18n is registered when wp_set_script_translations is called server-side.
+    // Fall back to identity function if i18n is unavailable for some reason.
+    var i18n = (window.wp && window.wp.i18n) ? window.wp.i18n : null;
+    var __ = i18n ? i18n.__ : function(s) { return s; };
+    var sprintf = (window.wp && window.wp.i18n && window.wp.i18n.sprintf)
+        ? window.wp.i18n.sprintf
+        : function() {
+            var args = Array.prototype.slice.call(arguments);
+            var format = args.shift();
+            var i = 0;
+            return format.replace(/%[sd]/g, function() { return args[i++]; });
+        };
+
+    // Currently displayed diagnosis (latest run or restored from history).
     var currentLog = {
         results: null,
         report:  '',
@@ -12,27 +25,27 @@
     };
 
     // =========================================
-    // イベントハンドラ
+    // Event handlers
     // =========================================
 
     /**
-     * 診断実行ボタン
+     * Run-diagnosis button
      */
     $('#npc-run-check').on('click', function() {
         var $btn = $(this);
         $btn.prop('disabled', true);
 
-        showLoading('診断を実行中...（サイトヘルスチェックに少し時間がかかります）');
+        showLoading(__( 'Running diagnosis... (Site Health takes a moment)', 'npc-site-doctor' ));
         $('#npc-results').hide();
         $('#npc-report').hide();
         $('#npc-download-report').hide();
 
         $.ajax({
-            url: npcHealthcheck.ajaxUrl,
+            url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'npc_sd_run_healthcheck',
-                nonce: npcHealthcheck.nonce
+                nonce: npcSiteDoctor.nonce
             },
             success: function(response) {
                 hideLoading();
@@ -42,36 +55,36 @@
                     currentLog.results = response.data.results;
                     currentLog.report  = '';
                     currentLog.date    = response.data.date;
-                    $('#npc-report-title').text('AIレポート');
+                    $('#npc-report-title').text(__( 'AI Report', 'npc-site-doctor' ));
                     renderResults(currentLog.results, currentLog.date);
                 } else {
-                    alert('診断エラー: ' + response.data);
+                    alert(__( 'Diagnosis error: ', 'npc-site-doctor' ) + response.data);
                 }
             },
             error: function() {
                 hideLoading();
                 $btn.prop('disabled', false);
-                alert('通信エラーが発生しました。');
+                alert(__( 'A communication error occurred.', 'npc-site-doctor' ));
             }
         });
     });
 
     /**
-     * AIレポート生成ボタン
+     * Generate AI Report button
      */
     $('#npc-generate-report').on('click', function() {
         var $btn = $(this);
         $btn.prop('disabled', true);
 
-        showLoading('AIレポートを生成中...（30秒ほどかかります）');
+        showLoading(__( 'Generating AI report... (takes about 30 seconds)', 'npc-site-doctor' ));
         $('#npc-report').hide();
 
         $.ajax({
-            url: npcHealthcheck.ajaxUrl,
+            url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'npc_sd_generate_report',
-                nonce: npcHealthcheck.nonce
+                nonce: npcSiteDoctor.nonce
             },
             timeout: 90000,
             success: function(response) {
@@ -82,43 +95,44 @@
                     currentLog.report = response.data.report;
                     renderReport(currentLog.report);
                 } else {
-                    alert('レポート生成エラー: ' + response.data);
+                    alert(__( 'Report generation error: ', 'npc-site-doctor' ) + response.data);
                 }
             },
             error: function() {
                 hideLoading();
                 $btn.prop('disabled', false);
-                alert('通信エラーが発生しました。タイムアウトの可能性があります。');
+                alert(__( 'A communication error occurred (possibly a timeout).', 'npc-site-doctor' ));
             }
         });
     });
 
     /**
-     * 現在表示中レポートのダウンロードボタン
+     * Download currently shown report
      */
     $('#npc-download-report').on('click', function() {
         downloadReport(currentLog.results, currentLog.report, currentLog.date, $('#npc-report-content').html());
     });
 
     /**
-     * 通知テストメール送信ボタン（設定画面）
+     * Send test notification email (settings screen)
      */
     $('#npc-test-notification').on('click', function() {
         var $btn = $(this);
         var $result = $('#npc-test-notification-result');
+        var btnLabel = __( 'Send Test Email', 'npc-site-doctor' );
 
-        $btn.prop('disabled', true).text('送信中...');
+        $btn.prop('disabled', true).text(__( 'Sending...', 'npc-site-doctor' ));
         $result.text('').css('color', '');
 
         $.ajax({
-            url: npcHealthcheck.ajaxUrl,
+            url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'npc_sd_test_notification',
-                nonce:  npcHealthcheck.nonce
+                nonce:  npcSiteDoctor.nonce
             },
             success: function(response) {
-                $btn.prop('disabled', false).text('テストメールを送信');
+                $btn.prop('disabled', false).text(btnLabel);
                 if (response.success) {
                     $result.text('✓ ' + response.data.message).css('color', '#166534');
                 } else {
@@ -126,67 +140,68 @@
                 }
             },
             error: function() {
-                $btn.prop('disabled', false).text('テストメールを送信');
-                $result.text('✗ 通信エラーが発生しました').css('color', '#b91c1c');
+                $btn.prop('disabled', false).text(btnLabel);
+                $result.text('✗ ' + __( 'A communication error occurred.', 'npc-site-doctor' )).css('color', '#b91c1c');
             }
         });
     });
 
     /**
-     * カード内アクションボタン（debug.logクリア等）
-     * カードは動的生成なのでイベント委譲で拾う
+     * In-card action buttons (e.g. clear debug.log).
+     * Cards are rendered dynamically, so we delegate.
      */
     $('#npc-results-grid').on('click', '.npc-card__action[data-action="clear-log"]', function() {
         var $btn = $(this);
         var $card = $btn.closest('.npc-card');
+        var clearLabel = __( 'Clear Log', 'npc-site-doctor' );
 
-        if (!confirm('debug.log の内容をすべて削除します。よろしいですか？\n（ファイル自体は残り、パーミッションは維持されます）')) {
+        if (!confirm(__( 'Are you sure you want to clear the contents of debug.log?\n(The file itself stays in place and permissions are preserved.)', 'npc-site-doctor' ))) {
             return;
         }
 
-        $btn.prop('disabled', true).text('クリア中...');
+        $btn.prop('disabled', true).text(__( 'Clearing...', 'npc-site-doctor' ));
 
         $.ajax({
-            url: npcHealthcheck.ajaxUrl,
+            url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
                 action: 'npc_sd_clear_error_log',
-                nonce:  npcHealthcheck.nonce
+                nonce:  npcSiteDoctor.nonce
             },
             success: function(response) {
                 if (response.success) {
-                    // カードの表示を更新: サイズ0・エラー数0にして成功メッセージを表示
+                    // Update the card: size 0 / 0 errors / success message.
                     $card.find('ul').html(
-                        '<li>サイズ: 0 B</li>'
-                        + '<li>エラー数: 0 件</li>'
+                        '<li>' + escapeHtml(__( 'Size: 0 B', 'npc-site-doctor' )) + '</li>'
+                        + '<li>' + escapeHtml(__( 'Errors: 0', 'npc-site-doctor' )) + '</li>'
                         + '<li class="npc-card__notice">' + escapeHtml(response.data.message) + '</li>'
                     );
-                    // バッジを「正常」に更新
+                    // Switch the badge to "OK".
                     $card.removeClass('npc-card--warning npc-card--critical').addClass('npc-card--ok');
                     $card.find('.npc-badge')
                         .removeClass('npc-badge--warning npc-badge--critical')
                         .addClass('npc-badge--ok')
-                        .text('正常');
-                    // アクションボタンを非表示
+                        .text(__( 'OK', 'npc-site-doctor' ));
+                    // Hide action buttons.
                     $card.find('.npc-card__actions').hide();
                 } else {
-                    alert('エラー: ' + response.data);
-                    $btn.prop('disabled', false).text('ログをクリア');
+                    alert(__( 'Error: ', 'npc-site-doctor' ) + response.data);
+                    $btn.prop('disabled', false).text(clearLabel);
                 }
             },
             error: function() {
-                alert('通信エラーが発生しました。');
-                $btn.prop('disabled', false).text('ログをクリア');
+                alert(__( 'A communication error occurred.', 'npc-site-doctor' ));
+                $btn.prop('disabled', false).text(clearLabel);
             }
         });
     });
 
     // =========================================
-    // 画面描画
+    // Rendering
     // =========================================
 
     /**
-     * 診断結果をカード形式で表示
+     * Render the diagnosis result as cards.
      */
     function renderResults(data, dateLabel) {
         renderSummaryHeader(data, null, dateLabel);
@@ -194,112 +209,113 @@
         var $grid = $('#npc-results-grid');
         $grid.empty();
 
-        // WP本体
-        $grid.append(createCard('WordPress本体', data.core_updates.status, [
-            '現在: ' + data.core_updates.current_version,
+        // WP Core
+        $grid.append(createCard(__( 'WordPress Core', 'npc-site-doctor' ), data.core_updates.status, [
+            sprintf(__( 'Current: %s', 'npc-site-doctor' ), data.core_updates.current_version),
             data.core_updates.status === 'ok'
-                ? '最新バージョンです'
-                : '更新あり: ' + data.core_updates.latest_version
+                ? __( 'Up to date.', 'npc-site-doctor' )
+                : sprintf(__( 'Update available: %s', 'npc-site-doctor' ), data.core_updates.latest_version)
         ]));
 
-        // プラグイン
+        // Plugins
         var pluginItems = [
-            '全 ' + data.plugin_updates.total_plugins + ' 件（有効: ' + data.plugin_updates.active_plugins + '）',
-            '更新が必要: ' + data.plugin_updates.updates_count + ' 件'
+            sprintf(__( 'Total: %1$d (active: %2$d)', 'npc-site-doctor' ),
+                data.plugin_updates.total_plugins, data.plugin_updates.active_plugins),
+            sprintf(__( 'Updates needed: %d', 'npc-site-doctor' ), data.plugin_updates.updates_count)
         ];
         data.plugin_updates.updates_needed.forEach(function(p) {
             pluginItems.push(p.name + ': ' + p.current_version + ' → ' + p.new_version);
         });
-        $grid.append(createCard('プラグイン', data.plugin_updates.status, pluginItems));
+        $grid.append(createCard(__( 'Plugins', 'npc-site-doctor' ), data.plugin_updates.status, pluginItems));
 
-        // サイトヘルス
-        $grid.append(createCard('サイトヘルス',
+        // Site Health
+        $grid.append(createCard(__( 'Site Health', 'npc-site-doctor' ),
             data.site_health.critical_count > 0 ? 'critical' : (data.site_health.recommended_count > 0 ? 'warning' : 'ok'),
             [
-                '致命的: ' + data.site_health.critical_count + ' 件',
-                '推奨: ' + data.site_health.recommended_count + ' 件',
-                '良好: ' + data.site_health.good_count + ' 件'
+                sprintf(__( 'Critical: %d', 'npc-site-doctor' ), data.site_health.critical_count),
+                sprintf(__( 'Recommended: %d', 'npc-site-doctor' ), data.site_health.recommended_count),
+                sprintf(__( 'Good: %d', 'npc-site-doctor' ), data.site_health.good_count)
             ]
         ));
 
-        // PHP環境
-        $grid.append(createCard('サーバー環境', data.php_version.status, [
-            'PHP: ' + data.php_version.php_version,
-            'メモリ: ' + data.php_version.max_memory,
-            'アップロード上限: ' + data.php_version.max_upload
+        // PHP / server environment
+        $grid.append(createCard(__( 'Server Environment', 'npc-site-doctor' ), data.php_version.status, [
+            sprintf(__( 'PHP: %s', 'npc-site-doctor' ), data.php_version.php_version),
+            sprintf(__( 'Memory: %s', 'npc-site-doctor' ), data.php_version.max_memory),
+            sprintf(__( 'Max upload: %s', 'npc-site-doctor' ), data.php_version.max_upload)
         ]));
 
-        // エラーログ（存在+サイズがあればクリアボタンを表示）
+        // Error log
         var logItems = [];
         var logActions = [];
         if (!data.error_log.exists) {
-            logItems.push('debug.log なし');
+            logItems.push(__( 'debug.log does not exist.', 'npc-site-doctor' ));
         } else {
-            logItems.push('サイズ: ' + data.error_log.file_size);
-            logItems.push('エラー数: ' + data.error_log.error_count + ' 件');
+            logItems.push(sprintf(__( 'Size: %s', 'npc-site-doctor' ), data.error_log.file_size));
+            logItems.push(sprintf(__( 'Errors: %d', 'npc-site-doctor' ), data.error_log.error_count));
             if (parseFloat(data.error_log.file_size) > 0 || data.error_log.error_count > 0) {
                 logActions.push({
-                    label:   'ログをクリア',
+                    label:   __( 'Clear Log', 'npc-site-doctor' ),
                     action:  'clear-log',
                     variant: 'danger'
                 });
             }
         }
-        $grid.append(createCard('エラーログ', data.error_log.status, logItems, 'error-log', logActions));
+        $grid.append(createCard(__( 'Error Log', 'npc-site-doctor' ), data.error_log.status, logItems, 'error-log', logActions));
 
-        // ファイル改ざん検知
+        // File integrity
         var integrityItems = [];
         var integrityStatus = data.file_integrity.status;
 
         if (data.file_integrity.has_danger) {
-            integrityItems.push('不審なコードが検出されました');
+            integrityItems.push(__( 'Suspicious code detected.', 'npc-site-doctor' ));
             integrityStatus = 'critical';
         } else if (data.file_integrity.modified_count > 0) {
-            integrityItems.push('変更されたファイル: ' + data.file_integrity.modified_count + ' 件');
-            integrityItems.push('不審コード: 検出なし');
+            integrityItems.push(sprintf(__( 'Modified files: %d', 'npc-site-doctor' ), data.file_integrity.modified_count));
+            integrityItems.push(__( 'Suspicious code: none.', 'npc-site-doctor' ));
         } else if (data.file_integrity.suspect_count > 0) {
-            integrityItems.push('コアファイルに問題なし');
-            integrityItems.push('チェックサムずれ: ' + data.file_integrity.suspect_count + ' 件（不審コードなし・安全）');
+            integrityItems.push(__( 'No issues with core files.', 'npc-site-doctor' ));
+            integrityItems.push(sprintf(__( 'Checksum mismatches: %d (no suspicious code, safe).', 'npc-site-doctor' ), data.file_integrity.suspect_count));
             integrityStatus = 'ok';
         } else {
-            integrityItems.push('コアファイルに変更なし');
+            integrityItems.push(__( 'No changes to core files.', 'npc-site-doctor' ));
         }
 
-        $grid.append(createCard('ファイル改ざん検知', integrityStatus, integrityItems));
+        $grid.append(createCard(__( 'File Integrity', 'npc-site-doctor' ), integrityStatus, integrityItems));
 
-        // 不審ファイル
-        $grid.append(createCard('不審ファイル', data.suspicious_files.status, [
+        // Suspicious files
+        $grid.append(createCard(__( 'Suspicious Files', 'npc-site-doctor' ), data.suspicious_files.status, [
             data.suspicious_files.suspicious_count === 0
-                ? '検出なし'
-                : data.suspicious_files.suspicious_count + ' 件の不審なファイルを検出'
+                ? __( 'None detected.', 'npc-site-doctor' )
+                : sprintf(__( '%d suspicious file(s) detected.', 'npc-site-doctor' ), data.suspicious_files.suspicious_count)
         ]));
 
         // SSL
         var sslItems = [];
         if (data.ssl_certificate.expires_at) {
-            sslItems.push('有効期限: ' + data.ssl_certificate.expires_at);
-            sslItems.push('残り: ' + data.ssl_certificate.days_left + ' 日');
+            sslItems.push(sprintf(__( 'Expires: %s', 'npc-site-doctor' ), data.ssl_certificate.expires_at));
+            sslItems.push(sprintf(__( '%d days remaining', 'npc-site-doctor' ), data.ssl_certificate.days_left));
         }
         if (data.ssl_certificate.note) {
             sslItems.push(data.ssl_certificate.note);
         }
-        $grid.append(createCard('SSL証明書', data.ssl_certificate.status, sslItems));
+        $grid.append(createCard(__( 'SSL Certificate', 'npc-site-doctor' ), data.ssl_certificate.status, sslItems));
 
-        // ファイルパーミッション
+        // File permissions
         var permItems = data.file_permissions.checks.map(function(c) {
             var mark = c.status === 'ok' ? '✓' : '✗';
             return mark + ' ' + c.path + ': ' + c.current;
         });
-        $grid.append(createCard('ファイルパーミッション', data.file_permissions.status, permItems));
+        $grid.append(createCard(__( 'File Permissions', 'npc-site-doctor' ), data.file_permissions.status, permItems));
 
         $('#npc-results').show();
     }
 
     /**
-     * サマリヘッダーを描画
-     * @param {object} data      診断結果
-     * @param {string} aiGrade   AIが判定した総合評価 A〜D。nullなら自前集計
-     * @param {string} dateLabel 診断日時（"2026-04-19 12:30"形式）
+     * Render the summary header.
+     * @param {object} data      Diagnosis result.
+     * @param {string} aiGrade   AI-judged grade A-D. null means use local count.
+     * @param {string} dateLabel Diagnosis timestamp ("2026-04-19 12:30" format).
      */
     function renderSummaryHeader(data, aiGrade, dateLabel) {
         var statuses = collectStatuses(data);
@@ -324,9 +340,9 @@
         }
 
         var subtitleMap = {
-            ok: 'サイトの健全性は良好です',
-            warning: '軽微な注意事項があります',
-            critical: '早急な対応が必要な項目があります'
+            ok: __( 'The site is in good health.', 'npc-site-doctor' ),
+            warning: __( 'Some minor items need attention.', 'npc-site-doctor' ),
+            critical: __( 'There are items that require immediate attention.', 'npc-site-doctor' )
         };
 
         var segments = '';
@@ -339,8 +355,12 @@
         });
 
         var dateHtml = dateLabel
-            ? '<div class="npc-summary-date">診断日時: <strong>' + escapeHtml(dateLabel) + '</strong></div>'
+            ? '<div class="npc-summary-date">' + escapeHtml(__( 'Diagnosed at:', 'npc-site-doctor' ))
+                + ' <strong>' + escapeHtml(dateLabel) + '</strong></div>'
             : '';
+
+        var subtitleText = sprintf(__( '%1$s (checked %2$d items)', 'npc-site-doctor' ),
+            subtitleMap[gradeClass], total);
 
         var html = '<div class="npc-summary-card npc-summary-card--' + gradeClass + '">'
             + '<div class="npc-score-circle npc-score-circle--' + gradeClass + '">'
@@ -349,14 +369,14 @@
             + '</div>'
             + '<div class="npc-summary-body">'
             +   '<div class="npc-summary-head">'
-            +     '<h2 class="npc-summary-title">総合診断結果</h2>'
+            +     '<h2 class="npc-summary-title">' + escapeHtml(__( 'Overall Diagnosis', 'npc-site-doctor' )) + '</h2>'
             +     dateHtml
             +   '</div>'
-            +   '<p class="npc-summary-subtitle">' + subtitleMap[gradeClass] + '（' + total + '項目をチェック）</p>'
+            +   '<p class="npc-summary-subtitle">' + escapeHtml(subtitleText) + '</p>'
             +   '<div class="npc-count-pills">'
-            +     countPill('critical', '要対応', counts.critical)
-            +     countPill('warning', '注意', counts.warning)
-            +     countPill('ok', '正常', counts.ok)
+            +     countPill('critical', __( 'Critical', 'npc-site-doctor' ), counts.critical)
+            +     countPill('warning', __( 'Warning', 'npc-site-doctor' ), counts.warning)
+            +     countPill('ok', __( 'OK', 'npc-site-doctor' ), counts.ok)
             +   '</div>'
             +   '<div class="npc-progress-bar">' + segments + '</div>'
             + '</div>'
@@ -366,7 +386,7 @@
     }
 
     /**
-     * AIレポートを表示
+     * Show the AI report.
      */
     function renderReport(reportText) {
         var html = buildReportHtml(reportText, currentLog.results);
@@ -376,11 +396,11 @@
     }
 
     /**
-     * AIレポートテキストから表示用HTMLを組み立てる
-     * 履歴カードの描画でも使うため純粋関数にしている
+     * Convert AI report text into display HTML.
+     * Pure function (reused for history rendering).
      *
-     * @param {string} reportText AIレポート生テキスト
-     * @param {object} resultsForGrade サマリヘッダー更新用の診断結果（nullなら更新しない）
+     * @param {string} reportText      Raw AI report text.
+     * @param {object} resultsForGrade Diagnosis result for header rebuild. Pass null to skip.
      */
     function buildReportHtml(reportText, resultsForGrade) {
         var html = '';
@@ -391,12 +411,13 @@
 
         if (summaryMatch) {
             var summaryRaw = summaryMatch[1].trim();
+            // AI follows the prompt and produces "総合評価: X" in Japanese.
             var gradeMatch = summaryRaw.match(/総合評価[：:]?\s*([A-D])/);
             if (gradeMatch) aiGrade = gradeMatch[1];
             summaryComment = summaryRaw.replace(/総合評価[：:]?\s*[A-D][^\n]*\n?/, '').trim();
         }
 
-        // AIグレードでサマリヘッダーを上書き（今回レポートのみ。履歴はスキップ）
+        // Override summary header with AI grade (only for the current report; history skips).
         if (aiGrade && resultsForGrade) {
             renderSummaryHeader(resultsForGrade, aiGrade, currentLog.date);
         }
@@ -420,13 +441,19 @@
                 continue;
             }
 
-            var isEmpty = /^##.*\n+該当(なし|ありません)/.test(sectionContent)
-                || sectionContent.indexOf('該当なし') !== -1 && sectionContent.split('\n').length <= 3;
+            // AI prompt instructs Japanese "該当なし" for empty sections.
+            var emptyHeading = /^##.*\n+該当(なし|ありません)/;
+            var noneMarker = '該当なし';
+            var isEmpty = emptyHeading.test(sectionContent)
+                || (sectionContent.indexOf(noneMarker) !== -1 && sectionContent.split('\n').length <= 3);
 
             sectionContent = sectionContent
-                .replace(/\[STATUS:critical\]/g, '<span class="npc-badge npc-badge--critical">要対応</span> ')
-                .replace(/\[STATUS:warning\]/g, '<span class="npc-badge npc-badge--warning">注意</span> ')
-                .replace(/\[STATUS:ok\]/g, '<span class="npc-badge npc-badge--ok">正常</span> ');
+                .replace(/\[STATUS:critical\]/g, '<span class="npc-badge npc-badge--critical">'
+                    + escapeHtml(__( 'Critical', 'npc-site-doctor' )) + '</span> ')
+                .replace(/\[STATUS:warning\]/g, '<span class="npc-badge npc-badge--warning">'
+                    + escapeHtml(__( 'Warning', 'npc-site-doctor' )) + '</span> ')
+                .replace(/\[STATUS:ok\]/g, '<span class="npc-badge npc-badge--ok">'
+                    + escapeHtml(__( 'OK', 'npc-site-doctor' )) + '</span> ');
 
             var sectionHtml = markdownToHtml(sectionContent);
 
@@ -443,10 +470,10 @@
     }
 
     /**
-     * [SECTION:action] の中身をアクションカードに変換
+     * Convert the [SECTION:action] body into action cards.
      */
     function renderActionSection(content) {
-        var heading = '対応手順';
+        var heading = __( 'Action Steps', 'npc-site-doctor' );
         var headingMatch = content.match(/^##\s+(.+)$/m);
         if (headingMatch) {
             heading = headingMatch[1].trim();
@@ -472,11 +499,15 @@
             var lines = item.body.split('\n');
             var title = lines[0].replace(/^\*\*(.+?)\*\*$/, '$1').trim();
             var rest = lines.slice(1).join('\n').trim();
-            var badgeLabel = { critical: '要対応', warning: '注意', ok: '正常' }[item.status];
+            var badgeLabel = {
+                critical: __( 'Critical', 'npc-site-doctor' ),
+                warning: __( 'Warning', 'npc-site-doctor' ),
+                ok: __( 'OK', 'npc-site-doctor' )
+            }[item.status];
 
             html += '<div class="npc-action-card npc-action-card--' + item.status + '">'
                 + '<div class="npc-action-card__header">'
-                +   '<span class="npc-badge npc-badge--' + item.status + '">' + badgeLabel + '</span>'
+                +   '<span class="npc-badge npc-badge--' + item.status + '">' + escapeHtml(badgeLabel) + '</span>'
                 +   '<strong>' + escapeHtml(title) + '</strong>'
                 + '</div>'
                 + (rest ? '<div class="npc-action-card__body">' + markdownToHtml(rest) + '</div>' : '')
@@ -488,12 +519,12 @@
     }
 
     // =========================================
-    // 履歴アコーディオン
+    // History accordion
     // =========================================
 
     /**
-     * 履歴リスト全体を描画
-     * @param {Array} logs サーバーから渡された診断履歴（新しい順）
+     * Render the entire history list.
+     * @param {Array} logs Diagnosis history from server (newest first).
      */
     function renderHistoryList(logs) {
         var $list = $('#npc-history-list');
@@ -510,7 +541,7 @@
 
         $('#npc-history').show();
 
-        // ダウンロードボタンのクリック
+        // Download button click handler.
         $list.on('click', '.npc-history-download', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -519,13 +550,14 @@
             if (!log) return;
             var reportHtml = log.report
                 ? buildReportHtml(log.report, null)
-                : '<div class="npc-report-section npc-report-section--empty"><p>AIレポートは未生成です</p></div>';
+                : '<div class="npc-report-section npc-report-section--empty"><p>'
+                    + escapeHtml(__( 'AI report not yet generated.', 'npc-site-doctor' )) + '</p></div>';
             downloadReport(log.results, log.report, log.date, reportHtml);
         });
     }
 
     /**
-     * 履歴1件のアコーディオンを生成
+     * Render a single history accordion entry.
      */
     function renderHistoryItem(log) {
         var summary = log.summary || { grade: '-', counts: { critical: 0, warning: 0, ok: 0 } };
@@ -538,22 +570,30 @@
 
         var $details = $('<details class="npc-history-item npc-history-item--' + gradeClass + '"></details>');
 
+        var dateLabel = sprintf(__( 'Diagnosis from %s', 'npc-site-doctor' ), log.date);
+
         var summaryBar = '<summary class="npc-history-summary">'
             + '<span class="npc-history-grade npc-history-grade--' + gradeClass + '">' + escapeHtml(grade) + '</span>'
-            + '<span class="npc-history-date">' + escapeHtml(log.date) + ' の診断結果</span>'
+            + '<span class="npc-history-date">' + escapeHtml(dateLabel) + '</span>'
             + '<span class="npc-history-counts">'
-            +   '<span class="npc-history-count npc-history-count--critical">要対応 ' + counts.critical + '</span>'
-            +   '<span class="npc-history-count npc-history-count--warning">注意 ' + counts.warning + '</span>'
-            +   '<span class="npc-history-count npc-history-count--ok">正常 ' + counts.ok + '</span>'
+            +   '<span class="npc-history-count npc-history-count--critical">'
+            +     escapeHtml(__( 'Critical', 'npc-site-doctor' )) + ' ' + counts.critical + '</span>'
+            +   '<span class="npc-history-count npc-history-count--warning">'
+            +     escapeHtml(__( 'Warning', 'npc-site-doctor' )) + ' ' + counts.warning + '</span>'
+            +   '<span class="npc-history-count npc-history-count--ok">'
+            +     escapeHtml(__( 'OK', 'npc-site-doctor' )) + ' ' + counts.ok + '</span>'
             + '</span>'
-            + '<button type="button" class="button button-small npc-history-download" data-log-id="' + log.id + '">ダウンロード</button>'
+            + '<button type="button" class="button button-small npc-history-download" data-log-id="' + log.id + '">'
+            +   escapeHtml(__( 'Download', 'npc-site-doctor' )) + '</button>'
             + '</summary>';
 
         var bodyHtml = '<div class="npc-history-body">';
         if (log.report) {
             bodyHtml += buildReportHtml(log.report, null);
         } else {
-            bodyHtml += '<div class="npc-report-section npc-report-section--empty"><p>この診断にはAIレポートがありません（診断結果のみ保存）。</p></div>';
+            bodyHtml += '<div class="npc-report-section npc-report-section--empty"><p>'
+                + escapeHtml(__( 'This diagnosis has no AI report (results only).', 'npc-site-doctor' ))
+                + '</p></div>';
         }
         bodyHtml += '</div>';
 
@@ -562,38 +602,43 @@
     }
 
     // =========================================
-    // ダウンロード
+    // Download
     // =========================================
 
     /**
-     * レポートをHTMLファイルとしてダウンロード
-     * @param {object} results      診断結果（サイト名取得用）
-     * @param {string} reportText   AIレポート生テキスト（未使用、将来用）
-     * @param {string} dateLabel    診断日時
-     * @param {string} reportHtml   レンダリング済みレポートHTML
+     * Download the report as an HTML file.
+     * @param {object} results      Diagnosis result (used to obtain site name).
+     * @param {string} reportText   Raw AI report text (unused; reserved for future).
+     * @param {string} dateLabel    Diagnosis timestamp.
+     * @param {string} reportHtml   Rendered report HTML.
      */
     function downloadReport(results, reportText, dateLabel, reportHtml) {
-        // v0.7.0: サイト名は wp_localize_script 経由（npcHealthcheck.siteName）から取る。
-        // results.site_info.site_name は経由が長く、過去にタイトル文字化け（u5546u7528...）が発生した
-        var siteName = (window.npcHealthcheck && window.npcHealthcheck.siteName)
+        // Site name comes from wp_localize_script (npcSiteDoctor.siteName).
+        // Going through results.site_info.site_name has caused title encoding issues before.
+        var siteName = (window.npcSiteDoctor && window.npcSiteDoctor.siteName)
             || (results && results.site_info && results.site_info.site_name)
-            || 'サイト';
+            || __( 'Site', 'npc-site-doctor' );
         var date = (dateLabel || new Date().toISOString().slice(0, 10)).replace(/[: ]/g, '-');
 
+        var titleStr = sprintf(__( '%1$s Maintenance Report %2$s', 'npc-site-doctor' ),
+            siteName, date);
+        var heading  = sprintf(__( '%s — Maintenance Report', 'npc-site-doctor' ), siteName);
+        var meta     = sprintf(__( 'Diagnosed at: %s', 'npc-site-doctor' ), dateLabel || '');
+
         var html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">'
-            + '<title>' + escapeHtml(siteName) + ' 保守診断レポート ' + escapeHtml(date) + '</title>'
+            + '<title>' + escapeHtml(titleStr) + '</title>'
             + '<style>' + getDownloadStyle() + '</style></head><body>'
-            + '<h1>' + escapeHtml(siteName) + ' — 保守診断レポート</h1>'
-            + '<p class="meta">診断日時: ' + escapeHtml(dateLabel || '') + '</p>'
+            + '<h1>' + escapeHtml(heading) + '</h1>'
+            + '<p class="meta">' + escapeHtml(meta) + '</p>'
             + reportHtml
-            + '<div class="footer">Generated by NPC WP Healthcheck</div>'
+            + '<div class="footer">Generated by NPC Site Doctor</div>'
             + '</body></html>';
 
         var blob = new Blob([html], { type: 'text/html' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
-        a.download = 'healthcheck-report-' + date + '.html';
+        a.download = 'site-doctor-report-' + date + '.html';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -601,8 +646,8 @@
     }
 
     /**
-     * ダウンロードHTML用の内蔵CSS
-     * 管理画面と同じ見た目を再現するため、最小限のスタイルを埋め込む
+     * Built-in CSS for the download HTML.
+     * Mirrors the admin UI with a minimal style set.
      */
     function getDownloadStyle() {
         return 'body { font-family: "Hiragino Sans", "Yu Gothic", sans-serif; max-width: 880px; margin: 40px auto; padding: 0 24px; line-height: 1.8; color: #1e293b; }'
@@ -628,7 +673,7 @@
     }
 
     // =========================================
-    // ヘルパー
+    // Helpers
     // =========================================
 
     function collectStatuses(data) {
@@ -662,28 +707,31 @@
         if (count === 0) cls += ' npc-count-pill--zero';
         return '<span class="' + cls + '">'
             + '<span class="npc-count-pill__num">' + count + '</span>'
-            + '<span>' + label + '</span></span>';
+            + '<span>' + escapeHtml(label) + '</span></span>';
     }
 
     /**
-     * 診断カードを生成
-     * @param {string} title    カードタイトル
-     * @param {string} status   ok/warning/critical/update_available/unknown
-     * @param {Array}  items    表示項目文字列の配列
-     * @param {string} [cardId] カード識別子（data属性に付与）
-     * @param {Array}  [actions] アクションボタン配列 [{label, action, variant}]
+     * Build a diagnostic card.
+     * @param {string} title    Card title.
+     * @param {string} status   ok / warning / critical / update_available / unknown.
+     * @param {Array}  items    Array of item strings.
+     * @param {string} [cardId] Card identifier (stored on data attribute).
+     * @param {Array}  [actions] Action buttons [{label, action, variant}].
      */
     function createCard(title, status, items, cardId, actions) {
         var badgeLabel = {
-            ok: '正常', warning: '注意', critical: '要対応', unknown: '不明',
-            update_available: '更新あり'
+            ok: __( 'OK', 'npc-site-doctor' ),
+            warning: __( 'Warning', 'npc-site-doctor' ),
+            critical: __( 'Critical', 'npc-site-doctor' ),
+            unknown: __( 'Unknown', 'npc-site-doctor' ),
+            update_available: __( 'Update available', 'npc-site-doctor' )
         };
         var cardStatus = (status === 'update_available') ? 'warning' : status;
         var dataAttr = cardId ? ' data-card-id="' + escapeHtml(cardId) + '"' : '';
 
         var html = '<div class="npc-card npc-card--' + cardStatus + '"' + dataAttr + '>'
-            + '<h3>' + title + ' <span class="npc-badge npc-badge--' + cardStatus + '">'
-            + (badgeLabel[status] || status) + '</span></h3><ul>';
+            + '<h3>' + escapeHtml(title) + ' <span class="npc-badge npc-badge--' + cardStatus + '">'
+            + escapeHtml(badgeLabel[status] || status) + '</span></h3><ul>';
 
         items.forEach(function(item) {
             html += '<li>' + escapeHtml(item) + '</li>';
@@ -751,28 +799,28 @@
     }
 
     // =========================================
-    // ページ読込時の初期化
+    // Page-load init
     // =========================================
 
     $(function() {
-        var history = npcHealthcheck.history || [];
+        var history = npcSiteDoctor.history || [];
 
         if (history.length > 0) {
-            // 最新分は「前回の診断結果」として通常の領域に展開表示
+            // Latest entry is rendered as "previous diagnosis" in the main area.
             var latest = history[0];
             currentLog.results = latest.results;
             currentLog.report  = latest.report || '';
             currentLog.date    = latest.date;
 
             if (latest.results) {
-                $('#npc-report-title').text('前回のAIレポート');
+                $('#npc-report-title').text(__( 'Previous AI Report', 'npc-site-doctor' ));
                 renderResults(latest.results, latest.date);
             }
             if (latest.report) {
                 renderReport(latest.report);
             }
 
-            // 2件目以降を履歴アコーディオンに表示
+            // Older entries are pushed into the history accordion.
             renderHistoryList(history.slice(1));
         }
     });
