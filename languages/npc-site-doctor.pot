@@ -1,0 +1,980 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-11 14:27+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: npc-site-doctor.php:175
+msgid "Once Weekly"
+msgstr ""
+
+#: npc-site-doctor.php:181
+msgid "Once Monthly"
+msgstr ""
+
+#: npc-site-doctor.php:272 npc-site-doctor.php:759 npc-site-doctor.php:775
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: npc-site-doctor.php:277
+msgid "You are not the authorized user for this plugin."
+msgstr ""
+
+#. translators: %s: the original site URL the plugin was bound to
+#: npc-site-doctor.php:371
+#, php-format
+msgid "This plugin was set up for %s."
+msgstr ""
+
+#: npc-site-doctor.php:375
+msgid ""
+"It cannot be used on a different site. To re-setup, delete the "
+"npc_sd_bound_site_url option from the database and re-activate the plugin."
+msgstr ""
+
+#: npc-site-doctor.php:431
+msgid "Site Doctor Log"
+msgstr ""
+
+#. translators: %s: timestamp like "2026-05-11 14:32"
+#: npc-site-doctor.php:454
+#, php-format
+msgid "Diagnosis log %s"
+msgstr ""
+
+#: npc-site-doctor.php:685 templates/dashboard.php:17
+msgid "NPC Site Doctor"
+msgstr ""
+
+#: npc-site-doctor.php:686
+msgid "Site Doctor"
+msgstr ""
+
+#: npc-site-doctor.php:696
+msgid "Settings — NPC Site Doctor"
+msgstr ""
+
+#: npc-site-doctor.php:697
+msgid "Settings"
+msgstr ""
+
+#: npc-site-doctor.php:793 npc-site-doctor.php:824 npc-site-doctor.php:869
+#: npc-site-doctor.php:915
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+#: npc-site-doctor.php:830 includes/class-ai-reporter.php:31
+msgid ""
+"AI report feature is disabled. Define NPC_SD_API_KEY in wp-config.php to "
+"enable it."
+msgstr ""
+
+#: npc-site-doctor.php:835
+msgid "Please run a diagnosis first."
+msgstr ""
+
+#: npc-site-doctor.php:874 npc-site-doctor.php:919
+msgid "Administrator permission is required."
+msgstr ""
+
+#: npc-site-doctor.php:880 assets/js/admin.js:252
+msgid "debug.log does not exist."
+msgstr ""
+
+#: npc-site-doctor.php:884
+msgid "debug.log is not writable. Please check the file permissions via FTP."
+msgstr ""
+
+#: npc-site-doctor.php:893
+msgid "Failed to clear debug.log."
+msgstr ""
+
+#. translators: %s: byte size like "1.2 KB"
+#: npc-site-doctor.php:901
+#, php-format
+msgid "Cleared %s."
+msgstr ""
+
+#: npc-site-doctor.php:924
+msgid "Notification email address is not configured."
+msgstr ""
+
+#: npc-site-doctor.php:938
+msgid "This is a test notification (not an actual issue)."
+msgstr ""
+
+#: npc-site-doctor.php:939
+msgid ""
+"This is a test email used to confirm that the automated notification feature "
+"works correctly.\n"
+"In production, this email is sent when issues like the following are "
+"detected:\n"
+"  - File tampering / suspicious code\n"
+"  - Suspicious PHP files in the uploads directory\n"
+"  - SSL certificate expiring soon\n"
+"  - Critical Site Health issues"
+msgstr ""
+
+#: npc-site-doctor.php:946
+msgid "Failed to send email. Please check the WordPress mail configuration."
+msgstr ""
+
+#. translators: %s: destination email address
+#: npc-site-doctor.php:953
+#, php-format
+msgid "A test email was sent to %s. Please verify that it was received."
+msgstr ""
+
+#. translators: %s: error message from wp_remote_post
+#: includes/class-ai-reporter.php:66
+#, php-format
+msgid "Failed to connect to the Claude API: %s"
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/class-ai-reporter.php:78
+#, php-format
+msgid "API error (HTTP %d)"
+msgstr ""
+
+#: includes/class-ai-reporter.php:91
+msgid "The AI returned an empty response."
+msgstr ""
+
+#: includes/class-checker.php:99 includes/class-checker.php:100
+#: includes/class-checker.php:734
+msgid "unknown"
+msgstr ""
+
+#: includes/class-checker.php:193
+msgid "debug.log does not exist (WP_DEBUG may be disabled)."
+msgstr ""
+
+#: includes/class-checker.php:265
+msgid "Could not connect to WordPress.org API."
+msgstr ""
+
+#: includes/class-checker.php:275
+msgid "Could not retrieve checksum data."
+msgstr ""
+
+#: includes/class-checker.php:364
+msgid ""
+"Suspicious code patterns (eval, base64_decode, etc.) were detected. There is "
+"a high possibility of tampering, and immediate verification is required."
+msgstr ""
+
+#: includes/class-checker.php:366
+msgid ""
+"Checksum mismatches were found, but no suspicious code (eval, base64_decode, "
+"etc.) was detected. This is likely a normal difference caused by locale or "
+"automatic WP updates."
+msgstr ""
+
+#: includes/class-checker.php:368
+msgid ""
+"Core files have checksum mismatches. No suspicious code was detected, but "
+"unintended changes may be present."
+msgstr ""
+
+#: includes/class-checker.php:401
+msgid "eval() — executes a string as PHP code. Not used in legitimate WP core."
+msgstr ""
+
+#: includes/class-checker.php:402
+msgid "base64_decode() — often abused to hide encoded malicious code."
+msgstr ""
+
+#: includes/class-checker.php:403
+msgid "gzinflate() — used to decompress malicious payloads."
+msgstr ""
+
+#: includes/class-checker.php:404
+msgid "str_rot13() — used for code obfuscation."
+msgstr ""
+
+#: includes/class-checker.php:406
+msgid "assert() — eval-equivalent dangerous function."
+msgstr ""
+
+#: includes/class-checker.php:407
+msgid "create_function() — deprecated function that builds code dynamically."
+msgstr ""
+
+#: includes/class-checker.php:409
+msgid "shell_exec() — executes a shell command on the server."
+msgstr ""
+
+#: includes/class-checker.php:410
+msgid "passthru() — runs external commands."
+msgstr ""
+
+#: includes/class-checker.php:414
+msgid "chmod() — changes file permissions. Should not appear in core files."
+msgstr ""
+
+#: includes/class-checker.php:415
+msgid "error_reporting(0) — intentionally hides error output."
+msgstr ""
+
+#: includes/class-checker.php:422
+msgid "Consecutive hex escapes — a common code obfuscation pattern."
+msgstr ""
+
+#: includes/class-checker.php:424
+msgid "Long Base64 string assignment — possible encoded malicious payload."
+msgstr ""
+
+#: includes/class-checker.php:426
+msgid ""
+"Nested variable function call — dynamic code execution obfuscation pattern."
+msgstr ""
+
+#: includes/class-checker.php:676
+msgid "Site is not using HTTPS."
+msgstr ""
+
+#. translators: %s: SSL error message from stream_socket_client
+#: includes/class-checker.php:704
+#, php-format
+msgid "SSL connection failed: %s"
+msgstr ""
+
+#: includes/class-checker.php:717
+msgid "Failed to parse certificate."
+msgstr ""
+
+#: includes/class-notifier.php:34
+msgid "Possible file tampering (suspicious code detected)"
+msgstr ""
+
+#: includes/class-notifier.php:44
+msgid "Suspicious PHP files in uploads directory"
+msgstr ""
+
+#. translators: 1: days remaining until expiry, 2: expiry date in YYYY-MM-DD
+#: includes/class-notifier.php:55
+#, php-format
+msgid "%1$d days remaining (expires: %2$s)"
+msgstr ""
+
+#: includes/class-notifier.php:62
+msgid "SSL certificate is expiring soon"
+msgstr ""
+
+#. translators: %d: number of critical Site Health issues
+#: includes/class-notifier.php:78
+#, php-format
+msgid "Site Health critical issues: %d"
+msgstr ""
+
+#. translators: 1: site name, 2: number of critical issues
+#: includes/class-notifier.php:109
+#, php-format
+msgid "[NPC Site Doctor] %1$s detected %2$d critical issue(s)"
+msgstr ""
+
+#. translators: 1: site name, 2: site URL
+#: includes/class-notifier.php:117
+#, php-format
+msgid ""
+"An automated health-check on %1$s (%2$s) found issues that need attention."
+msgstr ""
+
+#: includes/class-notifier.php:122
+msgid "Detected issues"
+msgstr ""
+
+#: includes/class-notifier.php:136
+msgid "How to respond"
+msgstr ""
+
+#: includes/class-notifier.php:137
+msgid "See the full report in the admin dashboard:"
+msgstr ""
+
+#: includes/class-notifier.php:142
+msgid "AI diagnostic report"
+msgstr ""
+
+#: includes/class-notifier.php:150
+msgid "This email was sent by the NPC Site Doctor automated health-check."
+msgstr ""
+
+#: includes/class-notifier.php:151
+msgid ""
+"To stop these notifications, go to NPC Site Doctor > Settings and disable "
+"automatic diagnostics."
+msgstr ""
+
+#: templates/dashboard.php:28
+msgid "The AI report feature is disabled by default."
+msgstr ""
+
+#: templates/dashboard.php:29
+msgid "To enable it, add the following to wp-config.php:"
+msgstr ""
+
+#. translators: 1: Anthropic API key link, 2: npc WP maintenance link
+#: templates/dashboard.php:36
+#, php-format
+msgid ""
+"You can enable the AI report yourself with an %1$s. If setup is troublesome, "
+"you can also subscribe to the %2$s and we will configure the API key for you."
+msgstr ""
+
+#: templates/dashboard.php:37
+msgid "Anthropic API key"
+msgstr ""
+
+#: templates/dashboard.php:38 templates/settings.php:175
+msgid "npc WP maintenance plan"
+msgstr ""
+
+#: templates/dashboard.php:48
+msgid "Run Diagnosis"
+msgstr ""
+
+#: templates/dashboard.php:52
+msgid "Generate AI Report"
+msgstr ""
+
+#: templates/dashboard.php:56
+msgid "Download Report"
+msgstr ""
+
+#: templates/dashboard.php:63
+msgid "Running diagnosis..."
+msgstr ""
+
+#: templates/dashboard.php:71
+msgid "Diagnosis Result"
+msgstr ""
+
+#: templates/dashboard.php:78 assets/js/admin.js:58
+msgid "AI Report"
+msgstr ""
+
+#: templates/dashboard.php:85
+msgid "Diagnosis History"
+msgstr ""
+
+#. translators: %d: number of history entries kept
+#: templates/dashboard.php:90
+#, php-format
+msgid ""
+"The most recent %d entries are kept. Older entries are deleted automatically."
+msgstr ""
+
+#: templates/settings.php:13
+msgid "(not set)"
+msgstr ""
+
+#: templates/settings.php:26
+msgid "Not scheduled"
+msgstr ""
+
+#: templates/settings.php:29
+msgid "Daily"
+msgstr ""
+
+#: templates/settings.php:30
+msgid "Weekly (every 7 days)"
+msgstr ""
+
+#: templates/settings.php:31
+msgid "Monthly (every 30 days)"
+msgstr ""
+
+#: templates/settings.php:40
+msgid "Settings saved."
+msgstr ""
+
+#: templates/settings.php:44
+msgid "NPC Site Doctor — Settings"
+msgstr ""
+
+#: templates/settings.php:48
+msgid "Security Settings"
+msgstr ""
+
+#: templates/settings.php:51
+msgid "Authorized user"
+msgstr ""
+
+#: templates/settings.php:55
+msgid ""
+"Only the user who activated this plugin can operate it. Other users do not "
+"see the menu."
+msgstr ""
+
+#: templates/settings.php:60
+msgid "Bound site URL"
+msgstr ""
+
+#: templates/settings.php:64
+msgid ""
+"This plugin only operates on this domain. If the site is restored as a "
+"different domain (from backup), the plugin will automatically stop."
+msgstr ""
+
+#: templates/settings.php:69
+msgid "Current user"
+msgstr ""
+
+#. translators: %d: user ID
+#: templates/settings.php:75
+#, php-format
+msgid "(ID: %d)"
+msgstr ""
+
+#: templates/settings.php:86
+msgid "AI Report Feature (optional)"
+msgstr ""
+
+#. translators: %s: bold "Enabled" word wrapped in <strong>
+#: templates/settings.php:95
+#, php-format
+msgid "The AI report feature is %s."
+msgstr ""
+
+#: templates/settings.php:96
+msgid "Enabled"
+msgstr ""
+
+#: templates/settings.php:100
+msgid "API key:"
+msgstr ""
+
+#: templates/settings.php:106
+msgid ""
+"When the diagnosis result contains critical/warning items, the Claude API "
+"automatically generates a maintenance report in Japanese. The report is also "
+"attached to notification emails."
+msgstr ""
+
+#: templates/settings.php:109
+msgid "How to change the API key"
+msgstr ""
+
+#: templates/settings.php:110
+msgid ""
+"For security reasons, the API key is stored in wp-config.php instead of the "
+"database."
+msgstr ""
+
+#: templates/settings.php:112 templates/settings.php:155
+msgid "Open wp-config.php via FTP or a file manager."
+msgstr ""
+
+#. translators: %s: NPC_SD_API_KEY constant name in <code>
+#: templates/settings.php:117
+#, php-format
+msgid "Replace the value of %s with the new key."
+msgstr ""
+
+#. translators: %s: bold "Disabled" word wrapped in <strong>
+#: templates/settings.php:131
+#, php-format
+msgid "The AI report feature is %s. Only diagnostics are active."
+msgstr ""
+
+#: templates/settings.php:132
+msgid "Disabled"
+msgstr ""
+
+#: templates/settings.php:139
+msgid ""
+"Without an API key, this plugin still runs all 9 diagnostics, scheduled "
+"checks, email notification, and history. Configure the API key only if you "
+"want AI-generated maintenance reports in Japanese."
+msgstr ""
+
+#: templates/settings.php:142
+msgid "How to enable it"
+msgstr ""
+
+#: templates/settings.php:144
+msgid "A. Bring your own API key"
+msgstr ""
+
+#. translators: %s: Anthropic Console link
+#: templates/settings.php:150
+#, php-format
+msgid ""
+"Issue an API key at %s (pay-as-you-go, typically a few dozen JPY per month)."
+msgstr ""
+
+#: templates/settings.php:151
+msgid "Anthropic Console"
+msgstr ""
+
+#. translators: %s: code marker shown in wp-config.php
+#: templates/settings.php:160
+#, php-format
+msgid "Add the following line above %s:"
+msgstr ""
+
+#: templates/settings.php:169
+msgid "B. Use the npc maintenance plan"
+msgstr ""
+
+#. translators: %s: link to npc WP maintenance page
+#: templates/settings.php:174
+#, php-format
+msgid ""
+"We set up the API key for you as part of a monthly maintenance subscription. "
+"See %s."
+msgstr ""
+
+#: templates/settings.php:184
+msgid "Automatic Diagnosis & Notifications"
+msgstr ""
+
+#: templates/settings.php:186
+msgid ""
+"Run periodic diagnostics via WP Cron and send email when critical issues "
+"(file tampering, suspicious files, SSL expiration, etc.) are detected."
+msgstr ""
+
+#: templates/settings.php:195
+msgid "Automatic diagnosis"
+msgstr ""
+
+#: templates/settings.php:199
+msgid "Enable"
+msgstr ""
+
+#: templates/settings.php:201
+msgid "When disabled, both the scheduled check and email notifications stop."
+msgstr ""
+
+#: templates/settings.php:205
+msgid "Frequency"
+msgstr ""
+
+#: templates/settings.php:215
+msgid ""
+"WP Cron is triggered by page visits, so the actual execution time is "
+"approximate."
+msgstr ""
+
+#: templates/settings.php:220
+msgid "Notification email"
+msgstr ""
+
+#. translators: %s: authorized user's email
+#: templates/settings.php:230
+#, php-format
+msgid "If left blank, notifications are sent to the authorized user (%s)."
+msgstr ""
+
+#: templates/settings.php:238
+msgid "Notification triggers"
+msgstr ""
+
+#: templates/settings.php:240
+msgid "Email is sent when any of the following is detected:"
+msgstr ""
+
+#: templates/settings.php:242
+msgid "File tampering (suspicious code detected)"
+msgstr ""
+
+#: templates/settings.php:243
+msgid "Suspicious PHP files in the uploads directory"
+msgstr ""
+
+#: templates/settings.php:244
+msgid "SSL certificate expiring soon (14 days or less)"
+msgstr ""
+
+#: templates/settings.php:245
+msgid "Critical Site Health issues"
+msgstr ""
+
+#: templates/settings.php:250
+msgid "Next scheduled run"
+msgstr ""
+
+#. translators: %s: timestamp of last notification sent
+#: templates/settings.php:258
+#, php-format
+msgid "Last notification sent: %s"
+msgstr ""
+
+#: templates/settings.php:268
+msgid "Save Settings"
+msgstr ""
+
+#: templates/settings.php:273
+msgid "Notification Test"
+msgstr ""
+
+#: templates/settings.php:275
+msgid ""
+"Send a dummy critical notification to verify email delivery. The real "
+"diagnosis results are not affected."
+msgstr ""
+
+#: templates/settings.php:279 assets/js/admin.js:122
+msgid "Send Test Email"
+msgstr ""
+
+#: templates/settings.php:288
+msgid "API Cost Estimate"
+msgstr ""
+
+#: templates/settings.php:292
+msgid "Item"
+msgstr ""
+
+#: templates/settings.php:293
+msgid "Estimate"
+msgstr ""
+
+#: templates/settings.php:298
+msgid "Per-site diagnosis + report"
+msgstr ""
+
+#: templates/settings.php:299
+msgid "About JPY 2"
+msgstr ""
+
+#: templates/settings.php:302
+msgid "20 sites once a month"
+msgstr ""
+
+#: templates/settings.php:303
+msgid "About JPY 40 / month"
+msgstr ""
+
+#: templates/settings.php:306
+msgid "Automatic diagnosis (normal)"
+msgstr ""
+
+#: templates/settings.php:308
+msgid "JPY 0"
+msgstr ""
+
+#: templates/settings.php:309
+msgid "No AI report generated when no critical issues are detected."
+msgstr ""
+
+#: templates/settings.php:313
+msgid "Automatic diagnosis (only on critical)"
+msgstr ""
+
+#: templates/settings.php:315
+msgid "About JPY 2 / run"
+msgstr ""
+
+#: templates/settings.php:316
+msgid ""
+"AI report is generated and attached to the email when critical issues are "
+"detected."
+msgstr ""
+
+#: assets/js/admin.js:38
+msgid "Running diagnosis... (Site Health takes a moment)"
+msgstr ""
+
+#: assets/js/admin.js:61
+msgid "Diagnosis error: "
+msgstr ""
+
+#: assets/js/admin.js:67 assets/js/admin.js:144 assets/js/admin.js:193
+msgid "A communication error occurred."
+msgstr ""
+
+#: assets/js/admin.js:79
+msgid "Generating AI report... (takes about 30 seconds)"
+msgstr ""
+
+#: assets/js/admin.js:98
+msgid "Report generation error: "
+msgstr ""
+
+#: assets/js/admin.js:104
+msgid "A communication error occurred (possibly a timeout)."
+msgstr ""
+
+#: assets/js/admin.js:124
+msgid "Sending..."
+msgstr ""
+
+#: assets/js/admin.js:156 assets/js/admin.js:258
+msgid "Clear Log"
+msgstr ""
+
+#: assets/js/admin.js:158
+msgid ""
+"Are you sure you want to clear the contents of debug.log?\n"
+"(The file itself stays in place and permissions are preserved.)"
+msgstr ""
+
+#: assets/js/admin.js:162
+msgid "Clearing..."
+msgstr ""
+
+#: assets/js/admin.js:175
+msgid "Size: 0 B"
+msgstr ""
+
+#: assets/js/admin.js:176
+msgid "Errors: 0"
+msgstr ""
+
+#: assets/js/admin.js:184 assets/js/admin.js:379 assets/js/admin.js:456
+#: assets/js/admin.js:505 assets/js/admin.js:584 assets/js/admin.js:723
+msgid "OK"
+msgstr ""
+
+#: assets/js/admin.js:188
+msgid "Error: "
+msgstr ""
+
+#: assets/js/admin.js:213
+msgid "WordPress Core"
+msgstr ""
+
+#: assets/js/admin.js:214
+#, javascript-format
+msgid "Current: %s"
+msgstr ""
+
+#: assets/js/admin.js:216
+msgid "Up to date."
+msgstr ""
+
+#: assets/js/admin.js:217
+#, javascript-format
+msgid "Update available: %s"
+msgstr ""
+
+#: assets/js/admin.js:222
+#, javascript-format
+msgid "Total: %1$d (active: %2$d)"
+msgstr ""
+
+#: assets/js/admin.js:224
+#, javascript-format
+msgid "Updates needed: %d"
+msgstr ""
+
+#: assets/js/admin.js:229
+msgid "Plugins"
+msgstr ""
+
+#: assets/js/admin.js:232
+msgid "Site Health"
+msgstr ""
+
+#: assets/js/admin.js:235
+#, javascript-format
+msgid "Critical: %d"
+msgstr ""
+
+#: assets/js/admin.js:236
+#, javascript-format
+msgid "Recommended: %d"
+msgstr ""
+
+#: assets/js/admin.js:237
+#, javascript-format
+msgid "Good: %d"
+msgstr ""
+
+#: assets/js/admin.js:242
+msgid "Server Environment"
+msgstr ""
+
+#: assets/js/admin.js:243
+#, javascript-format
+msgid "PHP: %s"
+msgstr ""
+
+#: assets/js/admin.js:244
+#, javascript-format
+msgid "Memory: %s"
+msgstr ""
+
+#: assets/js/admin.js:245
+#, javascript-format
+msgid "Max upload: %s"
+msgstr ""
+
+#: assets/js/admin.js:254
+#, javascript-format
+msgid "Size: %s"
+msgstr ""
+
+#: assets/js/admin.js:255
+#, javascript-format
+msgid "Errors: %d"
+msgstr ""
+
+#: assets/js/admin.js:264
+msgid "Error Log"
+msgstr ""
+
+#: assets/js/admin.js:271
+msgid "Suspicious code detected."
+msgstr ""
+
+#: assets/js/admin.js:274
+#, javascript-format
+msgid "Modified files: %d"
+msgstr ""
+
+#: assets/js/admin.js:275
+msgid "Suspicious code: none."
+msgstr ""
+
+#: assets/js/admin.js:277
+msgid "No issues with core files."
+msgstr ""
+
+#: assets/js/admin.js:278
+#, javascript-format
+msgid "Checksum mismatches: %d (no suspicious code, safe)."
+msgstr ""
+
+#: assets/js/admin.js:281
+msgid "No changes to core files."
+msgstr ""
+
+#: assets/js/admin.js:284
+msgid "File Integrity"
+msgstr ""
+
+#: assets/js/admin.js:287
+msgid "Suspicious Files"
+msgstr ""
+
+#: assets/js/admin.js:289
+msgid "None detected."
+msgstr ""
+
+#: assets/js/admin.js:290
+#, javascript-format
+msgid "%d suspicious file(s) detected."
+msgstr ""
+
+#: assets/js/admin.js:296
+#, javascript-format
+msgid "Expires: %s"
+msgstr ""
+
+#: assets/js/admin.js:297
+#, javascript-format
+msgid "%d days remaining"
+msgstr ""
+
+#: assets/js/admin.js:302
+msgid "SSL Certificate"
+msgstr ""
+
+#: assets/js/admin.js:309
+msgid "File Permissions"
+msgstr ""
+
+#: assets/js/admin.js:343
+msgid "The site is in good health."
+msgstr ""
+
+#: assets/js/admin.js:344
+msgid "Some minor items need attention."
+msgstr ""
+
+#: assets/js/admin.js:345
+msgid "There are items that require immediate attention."
+msgstr ""
+
+#: assets/js/admin.js:358
+msgid "Diagnosed at:"
+msgstr ""
+
+#: assets/js/admin.js:362
+#, javascript-format
+msgid "%1$s (checked %2$d items)"
+msgstr ""
+
+#: assets/js/admin.js:372
+msgid "Overall Diagnosis"
+msgstr ""
+
+#: assets/js/admin.js:377 assets/js/admin.js:452 assets/js/admin.js:503
+#: assets/js/admin.js:580 assets/js/admin.js:725
+msgid "Critical"
+msgstr ""
+
+#: assets/js/admin.js:378 assets/js/admin.js:454 assets/js/admin.js:504
+#: assets/js/admin.js:582 assets/js/admin.js:724
+msgid "Warning"
+msgstr ""
+
+#: assets/js/admin.js:476
+msgid "Action Steps"
+msgstr ""
+
+#: assets/js/admin.js:554
+msgid "AI report not yet generated."
+msgstr ""
+
+#: assets/js/admin.js:573
+#, javascript-format
+msgid "Diagnosis from %s"
+msgstr ""
+
+#: assets/js/admin.js:587
+msgid "Download"
+msgstr ""
+
+#: assets/js/admin.js:595
+msgid "This diagnosis has no AI report (results only)."
+msgstr ""
+
+#: assets/js/admin.js:620
+msgid "Site"
+msgstr ""
+
+#: assets/js/admin.js:623
+#, javascript-format
+msgid "%1$s Maintenance Report %2$s"
+msgstr ""
+
+#: assets/js/admin.js:625
+#, javascript-format
+msgid "%s — Maintenance Report"
+msgstr ""
+
+#: assets/js/admin.js:626
+#, javascript-format
+msgid "Diagnosed at: %s"
+msgstr ""
+
+#: assets/js/admin.js:726
+msgid "Unknown"
+msgstr ""
+
+#: assets/js/admin.js:727
+msgid "Update available"
+msgstr ""
+
+#: assets/js/admin.js:816
+msgid "Previous AI Report"
+msgstr ""

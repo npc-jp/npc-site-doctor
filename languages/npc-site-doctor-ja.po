@@ -1,0 +1,987 @@
+# Japanese translation for NPC Site Doctor.
+# Copyright (C) 2026 npc
+# This file is distributed under the same license as the NPC Site Doctor plugin.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NPC Site Doctor 1.0.0\n"
+"Report-Msgid-Bugs-To: support@n-pc.jp\n"
+"POT-Creation-Date: 2026-05-11 14:27+0900\n"
+"PO-Revision-Date: 2026-05-11 14:27+0900\n"
+"Last-Translator: npc <support@n-pc.jp>\n"
+"Language-Team: Japanese\n"
+"Language: ja_JP\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: npc-site-doctor.php:175
+msgid "Once Weekly"
+msgstr "週1回"
+
+#: npc-site-doctor.php:181
+msgid "Once Monthly"
+msgstr "月1回"
+
+#: npc-site-doctor.php:272 npc-site-doctor.php:759 npc-site-doctor.php:775
+msgid "You do not have permission to access this page."
+msgstr "このページにアクセスする権限がありません。"
+
+#: npc-site-doctor.php:277
+msgid "You are not the authorized user for this plugin."
+msgstr "このプラグインで許可されたユーザーではありません。"
+
+#. translators: %s: the original site URL the plugin was bound to
+#: npc-site-doctor.php:371
+#, php-format
+msgid "This plugin was set up for %s."
+msgstr "このプラグインは %s 用にセットアップされています。"
+
+#: npc-site-doctor.php:375
+msgid ""
+"It cannot be used on a different site. To re-setup, delete the "
+"npc_sd_bound_site_url option from the database and re-activate the plugin."
+msgstr "別のサイトでは使用できません。再セットアップが必要な場合は、データベースの npc_sd_bound_site_url オプションを削除してからプラグインを再有効化してください。"
+
+#: npc-site-doctor.php:431
+msgid "Site Doctor Log"
+msgstr "Site Doctor ログ"
+
+#. translators: %s: timestamp like "2026-05-11 14:32"
+#: npc-site-doctor.php:454
+#, php-format
+msgid "Diagnosis log %s"
+msgstr "診断ログ %s"
+
+#: npc-site-doctor.php:685 templates/dashboard.php:17
+msgid "NPC Site Doctor"
+msgstr "NPC Site Doctor"
+
+#: npc-site-doctor.php:686
+msgid "Site Doctor"
+msgstr "Site Doctor"
+
+#: npc-site-doctor.php:696
+msgid "Settings — NPC Site Doctor"
+msgstr "設定 — NPC Site Doctor"
+
+#: npc-site-doctor.php:697
+msgid "Settings"
+msgstr "設定"
+
+#: npc-site-doctor.php:793 npc-site-doctor.php:824 npc-site-doctor.php:869
+#: npc-site-doctor.php:915
+msgid "You do not have permission to perform this action."
+msgstr "この操作を実行する権限がありません。"
+
+#: npc-site-doctor.php:830 includes/class-ai-reporter.php:31
+msgid ""
+"AI report feature is disabled. Define NPC_SD_API_KEY in wp-config.php to "
+"enable it."
+msgstr "AIレポート機能は無効です。wp-config.php に NPC_SD_API_KEY を設定してください。"
+
+#: npc-site-doctor.php:835
+msgid "Please run a diagnosis first."
+msgstr "先に診断を実行してください。"
+
+#: npc-site-doctor.php:874 npc-site-doctor.php:919
+msgid "Administrator permission is required."
+msgstr "管理者権限が必要です。"
+
+#: npc-site-doctor.php:880 assets/js/admin.js:252
+msgid "debug.log does not exist."
+msgstr "debug.log が存在しません。"
+
+#: npc-site-doctor.php:884
+msgid "debug.log is not writable. Please check the file permissions via FTP."
+msgstr "debug.log への書き込み権限がありません。FTPでパーミッションを確認してください。"
+
+#: npc-site-doctor.php:893
+msgid "Failed to clear debug.log."
+msgstr "debug.log のクリアに失敗しました。"
+
+#. translators: %s: byte size like "1.2 KB"
+#: npc-site-doctor.php:901
+#, php-format
+msgid "Cleared %s."
+msgstr "%s を削除しました。"
+
+#: npc-site-doctor.php:924
+msgid "Notification email address is not configured."
+msgstr "通知先メールアドレスが設定されていません。"
+
+#: npc-site-doctor.php:938
+msgid "This is a test notification (not an actual issue)."
+msgstr "これはテスト通知です（実際の問題ではありません）。"
+
+#: npc-site-doctor.php:939
+msgid ""
+"This is a test email used to confirm that the automated notification feature "
+"works correctly.\n"
+"In production, this email is sent when issues like the following are "
+"detected:\n"
+"  - File tampering / suspicious code\n"
+"  - Suspicious PHP files in the uploads directory\n"
+"  - SSL certificate expiring soon\n"
+"  - Critical Site Health issues"
+msgstr ""
+"自動診断の通知機能が正しく動作するかを確認するためのテストメールです。\n"
+"本番では、以下のような問題を検出したときにこのメールが届きます：\n"
+"  - ファイル改ざん / 不審コード検出\n"
+"  - uploads内の不審なPHPファイル\n"
+"  - SSL期限切れ間近\n"
+"  - サイトヘルスの致命的問題"
+
+#: npc-site-doctor.php:946
+msgid "Failed to send email. Please check the WordPress mail configuration."
+msgstr "メール送信に失敗しました。WordPressのメール設定を確認してください。"
+
+#. translators: %s: destination email address
+#: npc-site-doctor.php:953
+#, php-format
+msgid "A test email was sent to %s. Please verify that it was received."
+msgstr "%s にテストメールを送信しました。受信できるか確認してください。"
+
+#. translators: %s: error message from wp_remote_post
+#: includes/class-ai-reporter.php:66
+#, php-format
+msgid "Failed to connect to the Claude API: %s"
+msgstr "Claude API への接続に失敗: %s"
+
+#. translators: %d: HTTP status code
+#: includes/class-ai-reporter.php:78
+#, php-format
+msgid "API error (HTTP %d)"
+msgstr "APIエラー (HTTP %d)"
+
+#: includes/class-ai-reporter.php:91
+msgid "The AI returned an empty response."
+msgstr "AIからの応答が空でした。"
+
+#: includes/class-checker.php:99 includes/class-checker.php:100
+#: includes/class-checker.php:734
+msgid "unknown"
+msgstr "不明"
+
+#: includes/class-checker.php:193
+msgid "debug.log does not exist (WP_DEBUG may be disabled)."
+msgstr "debug.log が存在しません（WP_DEBUG が無効の可能性）。"
+
+#: includes/class-checker.php:265
+msgid "Could not connect to WordPress.org API."
+msgstr "WordPress.org API に接続できませんでした。"
+
+#: includes/class-checker.php:275
+msgid "Could not retrieve checksum data."
+msgstr "チェックサムデータが取得できませんでした。"
+
+#: includes/class-checker.php:364
+msgid ""
+"Suspicious code patterns (eval, base64_decode, etc.) were detected. There is "
+"a high possibility of tampering, and immediate verification is required."
+msgstr "不審なコードパターン（eval, base64_decode 等）が検出されました。改ざんの可能性が高いため、早急な確認が必要です。"
+
+#: includes/class-checker.php:366
+msgid ""
+"Checksum mismatches were found, but no suspicious code (eval, base64_decode, "
+"etc.) was detected. This is likely a normal difference caused by locale or "
+"automatic WP updates."
+msgstr "チェックサムのずれがありますが、不審なコード（eval, base64_decode 等）は検出されませんでした。ロケールやWP自動更新による正常な差異の可能性が高いです。"
+
+#: includes/class-checker.php:368
+msgid ""
+"Core files have checksum mismatches. No suspicious code was detected, but "
+"unintended changes may be present."
+msgstr "コアファイルにチェックサムのずれがあります。不審なコードは検出されませんでしたが、意図しない変更の可能性があります。"
+
+#: includes/class-checker.php:401
+msgid "eval() — executes a string as PHP code. Not used in legitimate WP core."
+msgstr "eval() — 文字列をPHPコードとして実行する関数。正規のWPコアでは使われない"
+
+#: includes/class-checker.php:402
+msgid "base64_decode() — often abused to hide encoded malicious code."
+msgstr "base64_decode() — エンコードされた不審コードを隠すために悪用される"
+
+#: includes/class-checker.php:403
+msgid "gzinflate() — used to decompress malicious payloads."
+msgstr "gzinflate() — 圧縮された悪意あるコードの解凍に使われる"
+
+#: includes/class-checker.php:404
+msgid "str_rot13() — used for code obfuscation."
+msgstr "str_rot13() — コードの難読化に使われる"
+
+#: includes/class-checker.php:406
+msgid "assert() — eval-equivalent dangerous function."
+msgstr "assert() — eval相当の危険な関数"
+
+#: includes/class-checker.php:407
+msgid "create_function() — deprecated function that builds code dynamically."
+msgstr "create_function() — 動的にコードを生成する非推奨関数"
+
+#: includes/class-checker.php:409
+msgid "shell_exec() — executes a shell command on the server."
+msgstr "shell_exec() — サーバー上でシェルコマンドを実行"
+
+#: includes/class-checker.php:410
+msgid "passthru() — runs external commands."
+msgstr "passthru() — 外部コマンドの実行"
+
+#: includes/class-checker.php:414
+msgid "chmod() — changes file permissions. Should not appear in core files."
+msgstr "chmod() — ファイルのパーミッション変更。コアファイルにあるべきでない"
+
+#: includes/class-checker.php:415
+msgid "error_reporting(0) — intentionally hides error output."
+msgstr "error_reporting(0) — エラー表示を意図的に隠す"
+
+#: includes/class-checker.php:422
+msgid "Consecutive hex escapes — a common code obfuscation pattern."
+msgstr "16進エスケープの連続 — コードの難読化によく使われるパターン"
+
+#: includes/class-checker.php:424
+msgid "Long Base64 string assignment — possible encoded malicious payload."
+msgstr "長いBase64文字列の代入 — エンコードされた悪意あるコードの可能性"
+
+#: includes/class-checker.php:426
+msgid ""
+"Nested variable function call — dynamic code execution obfuscation pattern."
+msgstr "変数関数のネスト呼び出し — 動的コード実行の難読化パターン"
+
+#: includes/class-checker.php:676
+msgid "Site is not using HTTPS."
+msgstr "サイトが HTTPS を使用していません。"
+
+#. translators: %s: SSL error message from stream_socket_client
+#: includes/class-checker.php:704
+#, php-format
+msgid "SSL connection failed: %s"
+msgstr "SSL接続に失敗: %s"
+
+#: includes/class-checker.php:717
+msgid "Failed to parse certificate."
+msgstr "証明書の解析に失敗しました。"
+
+#: includes/class-notifier.php:34
+msgid "Possible file tampering (suspicious code detected)"
+msgstr "ファイル改ざんの疑い（不審コード検出）"
+
+#: includes/class-notifier.php:44
+msgid "Suspicious PHP files in uploads directory"
+msgstr "uploads内に不審なPHPファイル"
+
+#. translators: 1: days remaining until expiry, 2: expiry date in YYYY-MM-DD
+#: includes/class-notifier.php:55
+#, php-format
+msgid "%1$d days remaining (expires: %2$s)"
+msgstr "残り %1$d 日（期限: %2$s）"
+
+#: includes/class-notifier.php:62
+msgid "SSL certificate is expiring soon"
+msgstr "SSL証明書の期限が近い"
+
+#. translators: %d: number of critical Site Health issues
+#: includes/class-notifier.php:78
+#, php-format
+msgid "Site Health critical issues: %d"
+msgstr "サイトヘルスの致命的問題 %d 件"
+
+#. translators: 1: site name, 2: number of critical issues
+#: includes/class-notifier.php:109
+#, php-format
+msgid "[NPC Site Doctor] %1$s detected %2$d critical issue(s)"
+msgstr "[NPC Site Doctor] %1$s で %2$d 件の重大な問題を検出"
+
+#. translators: 1: site name, 2: site URL
+#: includes/class-notifier.php:117
+#, php-format
+msgid ""
+"An automated health-check on %1$s (%2$s) found issues that need attention."
+msgstr "%1$s（%2$s）で自動診断を実行したところ、対応が必要な問題が見つかりました。"
+
+#: includes/class-notifier.php:122
+msgid "Detected issues"
+msgstr "検出された問題"
+
+#: includes/class-notifier.php:136
+msgid "How to respond"
+msgstr "対応方法"
+
+#: includes/class-notifier.php:137
+msgid "See the full report in the admin dashboard:"
+msgstr "詳細レポートは管理画面からご確認ください:"
+
+#: includes/class-notifier.php:142
+msgid "AI diagnostic report"
+msgstr "AIによる診断レポート"
+
+#: includes/class-notifier.php:150
+msgid "This email was sent by the NPC Site Doctor automated health-check."
+msgstr "このメールは NPC Site Doctor の自動診断から送信されました。"
+
+#: includes/class-notifier.php:151
+msgid ""
+"To stop these notifications, go to NPC Site Doctor > Settings and disable "
+"automatic diagnostics."
+msgstr "通知を止めるには、管理画面 > Site Doctor > 設定 から自動診断を OFF にしてください。"
+
+#: templates/dashboard.php:28
+msgid "The AI report feature is disabled by default."
+msgstr "AIレポート機能は標準では無効です。"
+
+#: templates/dashboard.php:29
+msgid "To enable it, add the following to wp-config.php:"
+msgstr "有効化するには wp-config.php に以下を追加してください:"
+
+#. translators: 1: Anthropic API key link, 2: npc WP maintenance link
+#: templates/dashboard.php:36
+#, php-format
+msgid ""
+"You can enable the AI report yourself with an %1$s. If setup is troublesome, "
+"you can also subscribe to the %2$s and we will configure the API key for you."
+msgstr "%1$s をお持ちであれば自分で有効化できます。設定が手間な場合は %2$s にお申し込みいただくと、APIキー設定込みでセットアップを代行します。"
+
+#: templates/dashboard.php:37
+msgid "Anthropic API key"
+msgstr "Anthropic API キー"
+
+#: templates/dashboard.php:38 templates/settings.php:175
+msgid "npc WP maintenance plan"
+msgstr "npc の WP 保守契約"
+
+#: templates/dashboard.php:48
+msgid "Run Diagnosis"
+msgstr "診断を実行"
+
+#: templates/dashboard.php:52
+msgid "Generate AI Report"
+msgstr "AIレポートを生成"
+
+#: templates/dashboard.php:56
+msgid "Download Report"
+msgstr "レポートをダウンロード"
+
+#: templates/dashboard.php:63
+msgid "Running diagnosis..."
+msgstr "診断を実行中..."
+
+#: templates/dashboard.php:71
+msgid "Diagnosis Result"
+msgstr "診断結果"
+
+#: templates/dashboard.php:78 assets/js/admin.js:58
+msgid "AI Report"
+msgstr "AIレポート"
+
+#: templates/dashboard.php:85
+msgid "Diagnosis History"
+msgstr "診断履歴"
+
+#. translators: %d: number of history entries kept
+#: templates/dashboard.php:90
+#, php-format
+msgid ""
+"The most recent %d entries are kept. Older entries are deleted automatically."
+msgstr "直近 %d 件を保持します。古いものから自動削除されます。"
+
+#: templates/settings.php:13
+msgid "(not set)"
+msgstr "未設定"
+
+#: templates/settings.php:26
+msgid "Not scheduled"
+msgstr "スケジュールなし"
+
+#: templates/settings.php:29
+msgid "Daily"
+msgstr "毎日"
+
+#: templates/settings.php:30
+msgid "Weekly (every 7 days)"
+msgstr "毎週（7日ごと）"
+
+#: templates/settings.php:31
+msgid "Monthly (every 30 days)"
+msgstr "毎月（30日ごと）"
+
+#: templates/settings.php:40
+msgid "Settings saved."
+msgstr "設定を保存しました。"
+
+#: templates/settings.php:44
+msgid "NPC Site Doctor — Settings"
+msgstr "NPC Site Doctor — 設定"
+
+#: templates/settings.php:48
+msgid "Security Settings"
+msgstr "セキュリティ設定"
+
+#: templates/settings.php:51
+msgid "Authorized user"
+msgstr "許可ユーザー"
+
+#: templates/settings.php:55
+msgid ""
+"Only the user who activated this plugin can operate it. Other users do not "
+"see the menu."
+msgstr "プラグイン初回有効化時に登録されたユーザーのみ操作可能です。他のユーザーにはメニューが表示されません。"
+
+#: templates/settings.php:60
+msgid "Bound site URL"
+msgstr "紐付けサイト"
+
+#: templates/settings.php:64
+msgid ""
+"This plugin only operates on this domain. If the site is restored as a "
+"different domain (from backup), the plugin will automatically stop."
+msgstr "このドメインでのみ動作します。バックアップ復元で別ドメインに移された場合、プラグインは自動的に停止します。"
+
+#: templates/settings.php:69
+msgid "Current user"
+msgstr "現在のユーザー"
+
+#. translators: %d: user ID
+#: templates/settings.php:75
+#, php-format
+msgid "(ID: %d)"
+msgstr "（ID: %d）"
+
+#: templates/settings.php:86
+msgid "AI Report Feature (optional)"
+msgstr "AIレポート機能（オプション）"
+
+#. translators: %s: bold "Enabled" word wrapped in <strong>
+#: templates/settings.php:95
+#, php-format
+msgid "The AI report feature is %s."
+msgstr "AIレポート機能は %s です。"
+
+#: templates/settings.php:96
+msgid "Enabled"
+msgstr "有効"
+
+#: templates/settings.php:100
+msgid "API key:"
+msgstr "APIキー:"
+
+#: templates/settings.php:106
+msgid ""
+"When the diagnosis result contains critical/warning items, the Claude API "
+"automatically generates a maintenance report in Japanese. The report is also "
+"attached to notification emails."
+msgstr "診断結果に critical/warning が含まれた場合、Claude API が日本語で修正提案レポートを自動生成します。通知メールにもレポートが添付されます。"
+
+#: templates/settings.php:109
+msgid "How to change the API key"
+msgstr "APIキーの変更方法"
+
+#: templates/settings.php:110
+msgid ""
+"For security reasons, the API key is stored in wp-config.php instead of the "
+"database."
+msgstr "セキュリティのため、APIキーはデータベースではなく wp-config.php に直接記述しています。"
+
+#: templates/settings.php:112 templates/settings.php:155
+msgid "Open wp-config.php via FTP or a file manager."
+msgstr "FTPまたはファイルマネージャーで wp-config.php を開きます。"
+
+#. translators: %s: NPC_SD_API_KEY constant name in <code>
+#: templates/settings.php:117
+#, php-format
+msgid "Replace the value of %s with the new key."
+msgstr "%s の値を新しいキーに書き換えます。"
+
+#. translators: %s: bold "Disabled" word wrapped in <strong>
+#: templates/settings.php:131
+#, php-format
+msgid "The AI report feature is %s. Only diagnostics are active."
+msgstr "AIレポート機能は %s です。診断機能のみが動作しています。"
+
+#: templates/settings.php:132
+msgid "Disabled"
+msgstr "無効"
+
+#: templates/settings.php:139
+msgid ""
+"Without an API key, this plugin still runs all 9 diagnostics, scheduled "
+"checks, email notification, and history. Configure the API key only if you "
+"want AI-generated maintenance reports in Japanese."
+msgstr "APIキーなしでも 9 項目の診断・自動通知・履歴管理が利用できます。AIレポート（修正提案を日本語で自動生成）を有効化したい場合のみ、以下の設定を行ってください。"
+
+#: templates/settings.php:142
+msgid "How to enable it"
+msgstr "有効化する方法"
+
+#: templates/settings.php:144
+msgid "A. Bring your own API key"
+msgstr "A. 自分でAPIキーを設定する"
+
+#. translators: %s: Anthropic Console link
+#: templates/settings.php:150
+#, php-format
+msgid ""
+"Issue an API key at %s (pay-as-you-go, typically a few dozen JPY per month)."
+msgstr "%s でAPIキーを発行します（クレジット最小課金で月数十円〜）。"
+
+#: templates/settings.php:151
+msgid "Anthropic Console"
+msgstr "Anthropic Console"
+
+#. translators: %s: code marker shown in wp-config.php
+#: templates/settings.php:160
+#, php-format
+msgid "Add the following line above %s:"
+msgstr "%s の上に以下を追記してください:"
+
+#: templates/settings.php:169
+msgid "B. Use the npc maintenance plan"
+msgstr "B. npc 保守契約を利用する"
+
+#. translators: %s: link to npc WP maintenance page
+#: templates/settings.php:174
+#, php-format
+msgid ""
+"We set up the API key for you as part of a monthly maintenance subscription. "
+"See %s."
+msgstr "APIキーの取得・設定込みで丸ごとセットアップを代行します。月額の保守契約に AIレポート機能を含めて運用できます（詳細: %s）。"
+
+#: templates/settings.php:184
+msgid "Automatic Diagnosis & Notifications"
+msgstr "自動診断と通知"
+
+#: templates/settings.php:186
+msgid ""
+"Run periodic diagnostics via WP Cron and send email when critical issues "
+"(file tampering, suspicious files, SSL expiration, etc.) are detected."
+msgstr "WP Cron を使って定期的に自動診断を実行し、重大な問題（ファイル改ざん・不審ファイル・SSL期限など）を検出したらメールで通知します。"
+
+#: templates/settings.php:195
+msgid "Automatic diagnosis"
+msgstr "自動診断"
+
+#: templates/settings.php:199
+msgid "Enable"
+msgstr "有効にする"
+
+#: templates/settings.php:201
+msgid "When disabled, both the scheduled check and email notifications stop."
+msgstr "OFFにすると、自動診断とメール通知は停止します。"
+
+#: templates/settings.php:205
+msgid "Frequency"
+msgstr "診断頻度"
+
+#: templates/settings.php:215
+msgid ""
+"WP Cron is triggered by page visits, so the actual execution time is "
+"approximate."
+msgstr "WP Cron はアクセス時にトリガーされる仕組みなので、実際の実行は頻度の目安です。"
+
+#: templates/settings.php:220
+msgid "Notification email"
+msgstr "通知先メール"
+
+#. translators: %s: authorized user's email
+#: templates/settings.php:230
+#, php-format
+msgid "If left blank, notifications are sent to the authorized user (%s)."
+msgstr "空欄の場合、許可ユーザーのメアド（%s）に送信されます。"
+
+#: templates/settings.php:238
+msgid "Notification triggers"
+msgstr "通知条件"
+
+#: templates/settings.php:240
+msgid "Email is sent when any of the following is detected:"
+msgstr "以下のいずれかを検出したときに通知:"
+
+#: templates/settings.php:242
+msgid "File tampering (suspicious code detected)"
+msgstr "ファイル改ざん（不審コード検出）"
+
+#: templates/settings.php:243
+msgid "Suspicious PHP files in the uploads directory"
+msgstr "uploads 内の不審な PHP ファイル"
+
+#: templates/settings.php:244
+msgid "SSL certificate expiring soon (14 days or less)"
+msgstr "SSL証明書の期限切れ間近（残り14日以下）"
+
+#: templates/settings.php:245
+msgid "Critical Site Health issues"
+msgstr "サイトヘルスの致命的問題"
+
+#: templates/settings.php:250
+msgid "Next scheduled run"
+msgstr "次回実行予定"
+
+#. translators: %s: timestamp of last notification sent
+#: templates/settings.php:258
+#, php-format
+msgid "Last notification sent: %s"
+msgstr "最終通知送信: %s"
+
+#: templates/settings.php:268
+msgid "Save Settings"
+msgstr "設定を保存"
+
+#: templates/settings.php:273
+msgid "Notification Test"
+msgstr "通知テスト"
+
+#: templates/settings.php:275
+msgid ""
+"Send a dummy critical notification to verify email delivery. The real "
+"diagnosis results are not affected."
+msgstr "実際のメール到達を確認するため、ダミーの critical 通知を送信します。本番の診断結果には影響しません。"
+
+#: templates/settings.php:279 assets/js/admin.js:122
+msgid "Send Test Email"
+msgstr "テストメールを送信"
+
+#: templates/settings.php:288
+msgid "API Cost Estimate"
+msgstr "API利用コストの目安"
+
+#: templates/settings.php:292
+msgid "Item"
+msgstr "項目"
+
+#: templates/settings.php:293
+msgid "Estimate"
+msgstr "目安"
+
+#: templates/settings.php:298
+msgid "Per-site diagnosis + report"
+msgstr "1サイトあたりの診断+レポート"
+
+#: templates/settings.php:299
+msgid "About JPY 2"
+msgstr "約2円"
+
+#: templates/settings.php:302
+msgid "20 sites once a month"
+msgstr "20サイト × 月1回"
+
+#: templates/settings.php:303
+msgid "About JPY 40 / month"
+msgstr "約40円/月"
+
+#: templates/settings.php:306
+msgid "Automatic diagnosis (normal)"
+msgstr "自動診断（通常時）"
+
+#: templates/settings.php:308
+msgid "JPY 0"
+msgstr "0円"
+
+#: templates/settings.php:309
+msgid "No AI report generated when no critical issues are detected."
+msgstr "critical 未検出時はAIレポートを生成しません。"
+
+#: templates/settings.php:313
+msgid "Automatic diagnosis (only on critical)"
+msgstr "自動診断（critical 検出時のみ）"
+
+#: templates/settings.php:315
+msgid "About JPY 2 / run"
+msgstr "約2円/回"
+
+#: templates/settings.php:316
+msgid ""
+"AI report is generated and attached to the email when critical issues are "
+"detected."
+msgstr "検出時にAIレポートを生成してメールに添付します。"
+
+#: assets/js/admin.js:38
+msgid "Running diagnosis... (Site Health takes a moment)"
+msgstr "診断を実行中...（サイトヘルスチェックに少し時間がかかります）"
+
+#: assets/js/admin.js:61
+msgid "Diagnosis error: "
+msgstr "診断エラー: "
+
+#: assets/js/admin.js:67 assets/js/admin.js:144 assets/js/admin.js:193
+msgid "A communication error occurred."
+msgstr "通信エラーが発生しました。"
+
+#: assets/js/admin.js:79
+msgid "Generating AI report... (takes about 30 seconds)"
+msgstr "AIレポートを生成中...（30秒ほどかかります）"
+
+#: assets/js/admin.js:98
+msgid "Report generation error: "
+msgstr "レポート生成エラー: "
+
+#: assets/js/admin.js:104
+msgid "A communication error occurred (possibly a timeout)."
+msgstr "通信エラーが発生しました。タイムアウトの可能性があります。"
+
+#: assets/js/admin.js:124
+msgid "Sending..."
+msgstr "送信中..."
+
+#: assets/js/admin.js:156 assets/js/admin.js:258
+msgid "Clear Log"
+msgstr "ログをクリア"
+
+#: assets/js/admin.js:158
+msgid ""
+"Are you sure you want to clear the contents of debug.log?\n"
+"(The file itself stays in place and permissions are preserved.)"
+msgstr ""
+"debug.log の内容をすべて削除します。よろしいですか？\n"
+"（ファイル自体は残り、パーミッションは維持されます）"
+
+#: assets/js/admin.js:162
+msgid "Clearing..."
+msgstr "クリア中..."
+
+#: assets/js/admin.js:175
+msgid "Size: 0 B"
+msgstr "サイズ: 0 B"
+
+#: assets/js/admin.js:176
+msgid "Errors: 0"
+msgstr "エラー数: 0"
+
+#: assets/js/admin.js:184 assets/js/admin.js:379 assets/js/admin.js:456
+#: assets/js/admin.js:505 assets/js/admin.js:584 assets/js/admin.js:723
+msgid "OK"
+msgstr "正常"
+
+#: assets/js/admin.js:188
+msgid "Error: "
+msgstr "エラー: "
+
+#: assets/js/admin.js:213
+msgid "WordPress Core"
+msgstr "WordPress本体"
+
+#: assets/js/admin.js:214
+#, javascript-format
+msgid "Current: %s"
+msgstr "現在: %s"
+
+#: assets/js/admin.js:216
+msgid "Up to date."
+msgstr "最新バージョンです。"
+
+#: assets/js/admin.js:217
+#, javascript-format
+msgid "Update available: %s"
+msgstr "更新あり: %s"
+
+#: assets/js/admin.js:222
+#, javascript-format
+msgid "Total: %1$d (active: %2$d)"
+msgstr "全 %1$d 件（有効: %2$d）"
+
+#: assets/js/admin.js:224
+#, javascript-format
+msgid "Updates needed: %d"
+msgstr "更新が必要: %d 件"
+
+#: assets/js/admin.js:229
+msgid "Plugins"
+msgstr "プラグイン"
+
+#: assets/js/admin.js:232
+msgid "Site Health"
+msgstr "サイトヘルス"
+
+#: assets/js/admin.js:235
+#, javascript-format
+msgid "Critical: %d"
+msgstr "致命的: %d 件"
+
+#: assets/js/admin.js:236
+#, javascript-format
+msgid "Recommended: %d"
+msgstr "推奨: %d 件"
+
+#: assets/js/admin.js:237
+#, javascript-format
+msgid "Good: %d"
+msgstr "良好: %d 件"
+
+#: assets/js/admin.js:242
+msgid "Server Environment"
+msgstr "サーバー環境"
+
+#: assets/js/admin.js:243
+#, javascript-format
+msgid "PHP: %s"
+msgstr "PHP: %s"
+
+#: assets/js/admin.js:244
+#, javascript-format
+msgid "Memory: %s"
+msgstr "メモリ: %s"
+
+#: assets/js/admin.js:245
+#, javascript-format
+msgid "Max upload: %s"
+msgstr "アップロード上限: %s"
+
+#: assets/js/admin.js:254
+#, javascript-format
+msgid "Size: %s"
+msgstr "サイズ: %s"
+
+#: assets/js/admin.js:255
+#, javascript-format
+msgid "Errors: %d"
+msgstr "エラー数: %d 件"
+
+#: assets/js/admin.js:264
+msgid "Error Log"
+msgstr "エラーログ"
+
+#: assets/js/admin.js:271
+msgid "Suspicious code detected."
+msgstr "不審なコードが検出されました。"
+
+#: assets/js/admin.js:274
+#, javascript-format
+msgid "Modified files: %d"
+msgstr "変更されたファイル: %d 件"
+
+#: assets/js/admin.js:275
+msgid "Suspicious code: none."
+msgstr "不審コード: 検出なし。"
+
+#: assets/js/admin.js:277
+msgid "No issues with core files."
+msgstr "コアファイルに問題なし。"
+
+#: assets/js/admin.js:278
+#, javascript-format
+msgid "Checksum mismatches: %d (no suspicious code, safe)."
+msgstr "チェックサムずれ: %d 件（不審コードなし・安全）"
+
+#: assets/js/admin.js:281
+msgid "No changes to core files."
+msgstr "コアファイルに変更なし。"
+
+#: assets/js/admin.js:284
+msgid "File Integrity"
+msgstr "ファイル改ざん検知"
+
+#: assets/js/admin.js:287
+msgid "Suspicious Files"
+msgstr "不審ファイル"
+
+#: assets/js/admin.js:289
+msgid "None detected."
+msgstr "検出なし。"
+
+#: assets/js/admin.js:290
+#, javascript-format
+msgid "%d suspicious file(s) detected."
+msgstr "%d 件の不審なファイルを検出。"
+
+#: assets/js/admin.js:296
+#, javascript-format
+msgid "Expires: %s"
+msgstr "有効期限: %s"
+
+#: assets/js/admin.js:297
+#, javascript-format
+msgid "%d days remaining"
+msgstr "残り %d 日"
+
+#: assets/js/admin.js:302
+msgid "SSL Certificate"
+msgstr "SSL証明書"
+
+#: assets/js/admin.js:309
+msgid "File Permissions"
+msgstr "ファイルパーミッション"
+
+#: assets/js/admin.js:343
+msgid "The site is in good health."
+msgstr "サイトの健全性は良好です。"
+
+#: assets/js/admin.js:344
+msgid "Some minor items need attention."
+msgstr "軽微な注意事項があります。"
+
+#: assets/js/admin.js:345
+msgid "There are items that require immediate attention."
+msgstr "早急な対応が必要な項目があります。"
+
+#: assets/js/admin.js:358
+msgid "Diagnosed at:"
+msgstr "診断日時:"
+
+#: assets/js/admin.js:362
+#, javascript-format
+msgid "%1$s (checked %2$d items)"
+msgstr "%1$s（%2$d 項目をチェック）"
+
+#: assets/js/admin.js:372
+msgid "Overall Diagnosis"
+msgstr "総合診断結果"
+
+#: assets/js/admin.js:377 assets/js/admin.js:452 assets/js/admin.js:503
+#: assets/js/admin.js:580 assets/js/admin.js:725
+msgid "Critical"
+msgstr "要対応"
+
+#: assets/js/admin.js:378 assets/js/admin.js:454 assets/js/admin.js:504
+#: assets/js/admin.js:582 assets/js/admin.js:724
+msgid "Warning"
+msgstr "注意"
+
+#: assets/js/admin.js:476
+msgid "Action Steps"
+msgstr "対応手順"
+
+#: assets/js/admin.js:554
+msgid "AI report not yet generated."
+msgstr "AIレポートは未生成です。"
+
+#: assets/js/admin.js:573
+#, javascript-format
+msgid "Diagnosis from %s"
+msgstr "%s の診断結果"
+
+#: assets/js/admin.js:587
+msgid "Download"
+msgstr "ダウンロード"
+
+#: assets/js/admin.js:595
+msgid "This diagnosis has no AI report (results only)."
+msgstr "この診断にはAIレポートがありません（診断結果のみ保存）。"
+
+#: assets/js/admin.js:620
+msgid "Site"
+msgstr "サイト"
+
+#: assets/js/admin.js:623
+#, javascript-format
+msgid "%1$s Maintenance Report %2$s"
+msgstr "%1$s 保守診断レポート %2$s"
+
+#: assets/js/admin.js:625
+#, javascript-format
+msgid "%s — Maintenance Report"
+msgstr "%s — 保守診断レポート"
+
+#: assets/js/admin.js:626
+#, javascript-format
+msgid "Diagnosed at: %s"
+msgstr "診断日時: %s"
+
+#: assets/js/admin.js:726
+msgid "Unknown"
+msgstr "不明"
+
+#: assets/js/admin.js:727
+msgid "Update available"
+msgstr "更新あり"
+
+#: assets/js/admin.js:816
+msgid "Previous AI Report"
+msgstr "前回のAIレポート"
