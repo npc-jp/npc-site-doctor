@@ -35,7 +35,7 @@ $ai_available = NPC_SD_Plugin::is_ai_available();
                     /* translators: 1: Anthropic API key link, 2: npc WP maintenance link */
                     esc_html__( 'You can enable the AI report yourself with an %1$s. If setup is troublesome, you can also subscribe to the %2$s and we will configure the API key for you.', 'npc-site-doctor' ),
                     '<a href="https://console.anthropic.com/" target="_blank" rel="noopener">' . esc_html__( 'Anthropic API key', 'npc-site-doctor' ) . '</a>',
-                    '<a href="https://n-pc.jp/services/wp-maintenance" target="_blank" rel="noopener">' . esc_html__( 'npc WP maintenance plan', 'npc-site-doctor' ) . '</a>'
+                    '<a href="https://n-pc.jp/services/wp-maintenance/" target="_blank" rel="noopener">' . esc_html__( 'npc WP maintenance plan', 'npc-site-doctor' ) . '</a>'
                 );
                 ?>
             </p>

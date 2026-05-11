@@ -172,7 +172,7 @@ $settings_updated = isset( $_GET['settings-updated'] ) ? sanitize_key( wp_unslas
                 printf(
                     /* translators: %s: link to npc WP maintenance page */
                     esc_html__( 'We set up the API key for you as part of a monthly maintenance subscription. See %s.', 'npc-site-doctor' ),
-                    '<a href="https://n-pc.jp/services/wp-maintenance" target="_blank" rel="noopener">' . esc_html__( 'npc WP maintenance plan', 'npc-site-doctor' ) . '</a>'
+                    '<a href="https://n-pc.jp/services/wp-maintenance/" target="_blank" rel="noopener">' . esc_html__( 'npc WP maintenance plan', 'npc-site-doctor' ) . '</a>'
                 );
                 ?>
             </p>
