@@ -6,20 +6,20 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-$api_key        = NPC_WP_Healthcheck::get_api_key();
+$api_key        = NPC_SD_Plugin::get_api_key();
 $has_api_key    = ! empty( $api_key );
-$ai_available   = NPC_WP_Healthcheck::is_ai_available();
+$ai_available   = NPC_SD_Plugin::is_ai_available();
 $masked_key     = $has_api_key ? substr( $api_key, 0, 10 ) . '...' . substr( $api_key, -4 ) : '';
-$allowed_email  = get_option( 'npc_healthcheck_allowed_user_email', '未設定' );
-$bound_url      = get_option( 'npc_healthcheck_bound_site_url', '未設定' );
+$allowed_email  = get_option( 'npc_sd_allowed_user_email', '未設定' );
+$bound_url      = get_option( 'npc_sd_bound_site_url', '未設定' );
 $current_user   = wp_get_current_user();
 
 // 自動診断の設定値
-$auto_enabled   = (bool) get_option( 'npc_healthcheck_auto_enabled', false );
-$auto_schedule  = get_option( 'npc_healthcheck_auto_schedule', 'weekly' );
-$notify_email   = get_option( 'npc_healthcheck_notify_email', '' );
-$last_notified  = get_option( 'npc_healthcheck_last_notified', '' );
-$next_run_ts    = wp_next_scheduled( NPC_HEALTHCHECK_CRON_HOOK );
+$auto_enabled   = (bool) get_option( 'npc_sd_auto_enabled', false );
+$auto_schedule  = get_option( 'npc_sd_auto_schedule', 'weekly' );
+$notify_email   = get_option( 'npc_sd_notify_email', '' );
+$last_notified  = get_option( 'npc_sd_last_notified', '' );
+$next_run_ts    = wp_next_scheduled( NPC_SD_CRON_HOOK );
 $next_run_text  = $next_run_ts
     ? wp_date( 'Y-m-d H:i', $next_run_ts )
     : 'スケジュールなし';
@@ -94,7 +94,7 @@ $schedule_labels = array(
             <p>セキュリティのため、APIキーはデータベースではなく <code>wp-config.php</code> に直接記述しています。</p>
             <ol>
                 <li>FTPまたはファイルマネージャーで <code>wp-config.php</code> を開く</li>
-                <li><code>NPC_HEALTHCHECK_API_KEY</code> の値を新しいキーに書き換える</li>
+                <li><code>NPC_SD_API_KEY</code> の値を新しいキーに書き換える</li>
             </ol>
 
         <?php else : ?>
@@ -120,7 +120,7 @@ $schedule_labels = array(
                 <li><code>/* That's all, stop editing! */</code> の<strong>上</strong>に以下を追記：</li>
             </ol>
 
-            <pre style="background: #23282d; color: #eee; padding: 12px 16px; border-radius: 4px; overflow-x: auto;">define( 'NPC_HEALTHCHECK_API_KEY', 'ここにAPIキーを貼り付け' );</pre>
+            <pre style="background: #23282d; color: #eee; padding: 12px 16px; border-radius: 4px; overflow-x: auto;">define( 'NPC_SD_API_KEY', 'ここにAPIキーを貼り付け' );</pre>
 
             <h4 style="margin-top: 16px;">B. npc 保守契約を利用する</h4>
             <p>
@@ -139,8 +139,8 @@ $schedule_labels = array(
         </p>
 
         <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-            <?php wp_nonce_field( 'npc_healthcheck_auto_settings' ); ?>
-            <input type="hidden" name="action" value="npc_save_auto_settings">
+            <?php wp_nonce_field( 'npc_sd_auto_settings' ); ?>
+            <input type="hidden" name="action" value="npc_sd_save_auto_settings">
 
             <table class="form-table">
                 <tr>

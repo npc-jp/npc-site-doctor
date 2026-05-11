@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class NPC_Checker {
+class NPC_SD_Checker {
 
     /**
      * 全チェックを実行

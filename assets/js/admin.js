@@ -31,7 +31,7 @@
             url: npcHealthcheck.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_run_healthcheck',
+                action: 'npc_sd_run_healthcheck',
                 nonce: npcHealthcheck.nonce
             },
             success: function(response) {
@@ -70,7 +70,7 @@
             url: npcHealthcheck.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_generate_report',
+                action: 'npc_sd_generate_report',
                 nonce: npcHealthcheck.nonce
             },
             timeout: 90000,
@@ -114,7 +114,7 @@
             url: npcHealthcheck.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_test_notification',
+                action: 'npc_sd_test_notification',
                 nonce:  npcHealthcheck.nonce
             },
             success: function(response) {
@@ -150,7 +150,7 @@
             url: npcHealthcheck.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_clear_error_log',
+                action: 'npc_sd_clear_error_log',
                 nonce:  npcHealthcheck.nonce
             },
             success: function(response) {

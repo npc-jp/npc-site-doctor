@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class NPC_AI_Reporter {
+class NPC_SD_AI_Reporter {
 
     /** @var string Claude APIのエンドポイント */
     private $api_url = 'https://api.anthropic.com/v1/messages';
@@ -19,17 +19,17 @@ class NPC_AI_Reporter {
     /**
      * 診断結果からAIレポートを生成
      *
-     * @param array $results NPC_Checker::run_all_checks() の返り値
+     * @param array $results NPC_SD_Checker::run_all_checks() の返り値
      * @return string|WP_Error レポートHTML or エラー
      */
     public function generate( $results ) {
         // AI機能の利用可否を判定（wp-config.php定数 or DB旧キー、フィルタ対応）
-        if ( ! NPC_WP_Healthcheck::is_ai_available() ) {
-            return new WP_Error( 'ai_disabled', 'AIレポート機能は無効です。wp-config.php に NPC_HEALTHCHECK_API_KEY を設定してください。' );
+        if ( ! NPC_SD_Plugin::is_ai_available() ) {
+            return new WP_Error( 'ai_disabled', 'AIレポート機能は無効です。wp-config.php に NPC_SD_API_KEY を設定してください。' );
         }
 
         // 実際のキー値を取得（is_ai_available() で空でないことは保証済み）
-        $api_key = NPC_WP_Healthcheck::get_api_key();
+        $api_key = NPC_SD_Plugin::get_api_key();
 
         // 診断結果をプロンプト用のテキストに整形
         $diagnosis_text = $this->format_results_for_prompt( $results );

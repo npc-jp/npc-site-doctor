@@ -1,13 +1,15 @@
 <?php
 /**
- * Plugin Name: NPC WP Healthcheck
- * Plugin URI: https://n-pc.jp
- * Description: WordPressサイトの保守診断を自動化し、AIが修正提案レポートを生成するツール
- * Version: 0.7.8
- * Author: npc (Azu)
- * Author URI: https://n-pc.jp
+ * Plugin Name: NPC Site Doctor
+ * Plugin URI: https://n-pc.jp/products/site-doctor/
+ * Description: WordPress maintenance health-check tool with 9-point diagnostics, history tracking, and optional AI-powered reports.
+ * Version: 1.0.0
+ * Author: npc
+ * Author URI: https://n-pc.jp/
  * License: GPL v2 or later
- * Text Domain: npc-wp-healthcheck
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: npc-site-doctor
+ * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
  */
@@ -18,22 +20,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // プラグイン定数
-define( 'NPC_HEALTHCHECK_VERSION', '0.7.8' );
-define( 'NPC_HEALTHCHECK_PATH', plugin_dir_path( __FILE__ ) );
-define( 'NPC_HEALTHCHECK_URL', plugin_dir_url( __FILE__ ) );
+define( 'NPC_SD_VERSION', '1.0.0' );
+define( 'NPC_SD_PATH', plugin_dir_path( __FILE__ ) );
+define( 'NPC_SD_URL', plugin_dir_url( __FILE__ ) );
 
 // 診断履歴CPTと保持件数
-define( 'NPC_HEALTHCHECK_CPT', 'npc_hc_log' );
-define( 'NPC_HEALTHCHECK_HISTORY_LIMIT', 10 );
+define( 'NPC_SD_CPT', 'nsd_log' );
+define( 'NPC_SD_HISTORY_LIMIT', 10 );
 
 // 自動診断のcronフック名
-define( 'NPC_HEALTHCHECK_CRON_HOOK', 'npc_healthcheck_auto_check' );
+define( 'NPC_SD_CRON_HOOK', 'npc_sd_auto_check' );
 
 /**
  * メインクラス
  * プラグイン全体の初期化と管理画面の登録を担当
  */
-class NPC_WP_Healthcheck {
+class NPC_SD_Plugin {
 
     /** @var self|null シングルトンインスタンス */
     private static $instance = null;
@@ -64,7 +66,7 @@ class NPC_WP_Healthcheck {
         add_filter( 'cron_schedules', array( $this, 'add_custom_cron_schedules' ) );
 
         // 自動診断のcronフック
-        add_action( NPC_HEALTHCHECK_CRON_HOOK, array( $this, 'run_auto_check' ) );
+        add_action( NPC_SD_CRON_HOOK, array( $this, 'run_auto_check' ) );
 
         // DB上の旧APIキーをクリーンアップ（再有効化不要で即時実行）
         $this->maybe_cleanup_db_api_key();
@@ -85,28 +87,28 @@ class NPC_WP_Healthcheck {
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
         // AJAX: 診断実行（許可ユーザーチェック付き）
-        add_action( 'wp_ajax_npc_run_healthcheck', array( $this, 'ajax_run_healthcheck' ) );
+        add_action( 'wp_ajax_npc_sd_run_healthcheck', array( $this, 'ajax_run_healthcheck' ) );
 
         // AJAX: AIレポート生成（許可ユーザーチェック付き）
-        add_action( 'wp_ajax_npc_generate_report', array( $this, 'ajax_generate_report' ) );
+        add_action( 'wp_ajax_npc_sd_generate_report', array( $this, 'ajax_generate_report' ) );
 
         // AJAX: debug.logクリア
-        add_action( 'wp_ajax_npc_clear_error_log', array( $this, 'ajax_clear_error_log' ) );
+        add_action( 'wp_ajax_npc_sd_clear_error_log', array( $this, 'ajax_clear_error_log' ) );
 
         // 自動診断の設定保存（admin-post経由）
-        add_action( 'admin_post_npc_save_auto_settings', array( $this, 'handle_save_auto_settings' ) );
+        add_action( 'admin_post_npc_sd_save_auto_settings', array( $this, 'handle_save_auto_settings' ) );
 
         // AJAX: 通知テストメール送信
-        add_action( 'wp_ajax_npc_test_notification', array( $this, 'ajax_test_notification' ) );
+        add_action( 'wp_ajax_npc_sd_test_notification', array( $this, 'ajax_test_notification' ) );
     }
 
     /**
      * 依存ファイルの読み込み
      */
     private function load_dependencies() {
-        require_once NPC_HEALTHCHECK_PATH . 'includes/class-checker.php';
-        require_once NPC_HEALTHCHECK_PATH . 'includes/class-ai-reporter.php';
-        require_once NPC_HEALTHCHECK_PATH . 'includes/class-notifier.php';
+        require_once NPC_SD_PATH . 'includes/class-checker.php';
+        require_once NPC_SD_PATH . 'includes/class-ai-reporter.php';
+        require_once NPC_SD_PATH . 'includes/class-notifier.php';
     }
 
     /**
@@ -114,8 +116,8 @@ class NPC_WP_Healthcheck {
      * 毎回チェックするが、delete_optionは存在しなければ何もしないので軽い
      */
     private function maybe_cleanup_db_api_key() {
-        if ( defined( 'NPC_HEALTHCHECK_API_KEY' ) && NPC_HEALTHCHECK_API_KEY ) {
-            delete_option( 'npc_healthcheck_api_key' );
+        if ( defined( 'NPC_SD_API_KEY' ) && NPC_SD_API_KEY ) {
+            delete_option( 'npc_sd_api_key' );
         }
     }
 
@@ -130,23 +132,23 @@ class NPC_WP_Healthcheck {
      */
     public function on_activation() {
         // 許可ユーザーが未設定の場合だけ記録（初回のみ）
-        if ( ! get_option( 'npc_healthcheck_allowed_user_id' ) ) {
+        if ( ! get_option( 'npc_sd_allowed_user_id' ) ) {
             $current_user = wp_get_current_user();
-            update_option( 'npc_healthcheck_allowed_user_id', $current_user->ID );
-            update_option( 'npc_healthcheck_allowed_user_email', $current_user->user_email );
+            update_option( 'npc_sd_allowed_user_id', $current_user->ID );
+            update_option( 'npc_sd_allowed_user_email', $current_user->user_email );
         }
 
         // サイトURLが未設定の場合だけ記録（初回のみ）
-        if ( ! get_option( 'npc_healthcheck_bound_site_url' ) ) {
-            update_option( 'npc_healthcheck_bound_site_url', get_site_url() );
+        if ( ! get_option( 'npc_sd_bound_site_url' ) ) {
+            update_option( 'npc_sd_bound_site_url', get_site_url() );
         }
 
         // セットアップ完了フラグ
-        update_option( 'npc_healthcheck_setup_done', true );
+        update_option( 'npc_sd_setup_done', true );
 
         // wp-config.phpにAPIキーが定義されていれば、DB上の旧キーを削除（セキュリティ強化）
-        if ( defined( 'NPC_HEALTHCHECK_API_KEY' ) && NPC_HEALTHCHECK_API_KEY ) {
-            delete_option( 'npc_healthcheck_api_key' );
+        if ( defined( 'NPC_SD_API_KEY' ) && NPC_SD_API_KEY ) {
+            delete_option( 'npc_sd_api_key' );
         }
     }
 
@@ -155,7 +157,7 @@ class NPC_WP_Healthcheck {
      * 自動診断が無効化後も動き続けるのを防ぐ
      */
     public function on_deactivation() {
-        wp_clear_scheduled_hook( NPC_HEALTHCHECK_CRON_HOOK );
+        wp_clear_scheduled_hook( NPC_SD_CRON_HOOK );
     }
 
     // =========================================
@@ -189,7 +191,7 @@ class NPC_WP_Healthcheck {
      * @param string $schedule 'daily' | 'weekly' | 'monthly'
      */
     public function schedule_auto_check( $schedule ) {
-        wp_clear_scheduled_hook( NPC_HEALTHCHECK_CRON_HOOK );
+        wp_clear_scheduled_hook( NPC_SD_CRON_HOOK );
 
         $valid = array( 'daily', 'weekly', 'monthly' );
         if ( ! in_array( $schedule, $valid, true ) ) {
@@ -197,7 +199,7 @@ class NPC_WP_Healthcheck {
         }
 
         // 初回は1時間後から開始（即時実行を避けてユーザーの想定外を防ぐ）
-        wp_schedule_event( time() + HOUR_IN_SECONDS, $schedule, NPC_HEALTHCHECK_CRON_HOOK );
+        wp_schedule_event( time() + HOUR_IN_SECONDS, $schedule, NPC_SD_CRON_HOOK );
     }
 
     /**
@@ -206,11 +208,11 @@ class NPC_WP_Healthcheck {
      */
     public function run_auto_check() {
         // 自動診断がOFFなら何もしない（設定変更のタイミング次第で残留cron対策）
-        if ( ! get_option( 'npc_healthcheck_auto_enabled', false ) ) {
+        if ( ! get_option( 'npc_sd_auto_enabled', false ) ) {
             return;
         }
 
-        $checker = new NPC_Checker();
+        $checker = new NPC_SD_Checker();
         $results = $checker->run_all_checks();
 
         // 履歴CPTに保存
@@ -219,11 +221,11 @@ class NPC_WP_Healthcheck {
             return;
         }
 
-        update_option( 'npc_healthcheck_last_results', $results );
-        update_option( 'npc_healthcheck_last_run', current_time( 'mysql' ) );
+        update_option( 'npc_sd_last_results', $results );
+        update_option( 'npc_sd_last_run', current_time( 'mysql' ) );
 
         // critical検出判定
-        $issues = NPC_Notifier::detect_critical_issues( $results );
+        $issues = NPC_SD_Notifier::detect_critical_issues( $results );
         if ( empty( $issues ) ) {
             return; // critical なしなら通知不要
         }
@@ -232,11 +234,11 @@ class NPC_WP_Healthcheck {
         // APIキー未設定（GitHub公開版）の場合はAI機能をスキップし、メール通知のみ送る
         $report = '';
         if ( self::is_ai_available() ) {
-            $reporter = new NPC_AI_Reporter();
+            $reporter = new NPC_SD_AI_Reporter();
             $maybe_report = $reporter->generate( $results );
             if ( ! is_wp_error( $maybe_report ) ) {
                 $report = $maybe_report;
-                update_option( 'npc_healthcheck_last_report', $report );
+                update_option( 'npc_sd_last_report', $report );
                 $this->attach_report_to_log( $log_id, $report );
             }
         }
@@ -244,8 +246,8 @@ class NPC_WP_Healthcheck {
         // 通知メール送信
         $email = $this->get_notify_email();
         if ( $email ) {
-            NPC_Notifier::send( $email, $results, $issues, $report );
-            update_option( 'npc_healthcheck_last_notified', current_time( 'mysql' ) );
+            NPC_SD_Notifier::send( $email, $results, $issues, $report );
+            update_option( 'npc_sd_last_notified', current_time( 'mysql' ) );
         }
     }
 
@@ -254,11 +256,11 @@ class NPC_WP_Healthcheck {
      * 未設定なら許可ユーザーのメアドにフォールバック
      */
     private function get_notify_email() {
-        $configured = get_option( 'npc_healthcheck_notify_email', '' );
+        $configured = get_option( 'npc_sd_notify_email', '' );
         if ( is_email( $configured ) ) {
             return $configured;
         }
-        $allowed = get_option( 'npc_healthcheck_allowed_user_email', '' );
+        $allowed = get_option( 'npc_sd_allowed_user_email', '' );
         return is_email( $allowed ) ? $allowed : '';
     }
 
@@ -269,7 +271,7 @@ class NPC_WP_Healthcheck {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_die( '権限がありません。' );
         }
-        check_admin_referer( 'npc_healthcheck_auto_settings' );
+        check_admin_referer( 'npc_sd_auto_settings' );
 
         if ( ! $this->is_allowed_user() ) {
             wp_die( '許可されたユーザーではありません。' );
@@ -284,18 +286,18 @@ class NPC_WP_Healthcheck {
             $schedule = 'weekly';
         }
 
-        update_option( 'npc_healthcheck_auto_enabled', $enabled );
-        update_option( 'npc_healthcheck_auto_schedule', $schedule );
-        update_option( 'npc_healthcheck_notify_email', $email );
+        update_option( 'npc_sd_auto_enabled', $enabled );
+        update_option( 'npc_sd_auto_schedule', $schedule );
+        update_option( 'npc_sd_notify_email', $email );
 
         // cron再登録
         if ( $enabled ) {
             $this->schedule_auto_check( $schedule );
         } else {
-            wp_clear_scheduled_hook( NPC_HEALTHCHECK_CRON_HOOK );
+            wp_clear_scheduled_hook( NPC_SD_CRON_HOOK );
         }
 
-        wp_safe_redirect( add_query_arg( 'settings-updated', 'true', admin_url( 'admin.php?page=npc-healthcheck-settings' ) ) );
+        wp_safe_redirect( add_query_arg( 'settings-updated', 'true', admin_url( 'admin.php?page=npc-site-doctor-settings' ) ) );
         exit;
     }
 
@@ -307,18 +309,18 @@ class NPC_WP_Healthcheck {
         $current_user = wp_get_current_user();
 
         // まだセットアップ前ならfalse
-        if ( ! get_option( 'npc_healthcheck_setup_done' ) ) {
+        if ( ! get_option( 'npc_sd_setup_done' ) ) {
             return false;
         }
 
         // メールアドレスで照合（IDが違うサイトでも一致する）
-        $allowed_email = get_option( 'npc_healthcheck_allowed_user_email', '' );
+        $allowed_email = get_option( 'npc_sd_allowed_user_email', '' );
         if ( $current_user->user_email === $allowed_email ) {
             return true;
         }
 
         // フォールバック: ユーザーIDでも照合
-        $allowed_id = get_option( 'npc_healthcheck_allowed_user_id', 0 );
+        $allowed_id = get_option( 'npc_sd_allowed_user_id', 0 );
         if ( $current_user->ID === (int) $allowed_id ) {
             return true;
         }
@@ -332,7 +334,7 @@ class NPC_WP_Healthcheck {
      * バックアップ復元で別ドメインに移された場合をブロック
      */
     private function is_valid_site() {
-        $bound_url   = get_option( 'npc_healthcheck_bound_site_url', '' );
+        $bound_url   = get_option( 'npc_sd_bound_site_url', '' );
         $current_url = get_site_url();
 
         // まだ紐付けされていない（初回有効化前）場合はOK
@@ -354,12 +356,12 @@ class NPC_WP_Healthcheck {
         // 管理者にだけ表示
         if ( ! current_user_can( 'manage_options' ) ) return;
 
-        $bound_url = get_option( 'npc_healthcheck_bound_site_url', '' );
+        $bound_url = get_option( 'npc_sd_bound_site_url', '' );
         echo '<div class="notice notice-error"><p>';
         echo '<strong>WP Healthcheck:</strong> ';
         echo 'このプラグインは <code>' . esc_html( $bound_url ) . '</code> 用にセットアップされています。';
         echo '別のサイトでは使用できません。再セットアップが必要な場合は、';
-        echo 'データベースの <code>npc_healthcheck_bound_site_url</code> オプションを削除してからプラグインを再有効化してください。';
+        echo 'データベースの <code>npc_sd_bound_site_url</code> オプションを削除してからプラグインを再有効化してください。';
         echo '</p></div>';
     }
 
@@ -369,12 +371,12 @@ class NPC_WP_Healthcheck {
      */
     public static function get_api_key() {
         // wp-config.php の定数を最優先
-        if ( defined( 'NPC_HEALTHCHECK_API_KEY' ) && NPC_HEALTHCHECK_API_KEY ) {
-            return NPC_HEALTHCHECK_API_KEY;
+        if ( defined( 'NPC_SD_API_KEY' ) && NPC_SD_API_KEY ) {
+            return NPC_SD_API_KEY;
         }
 
         // 旧バージョン互換: DBに保存されたキーがあればそれを使う（移行用）
-        $db_key = get_option( 'npc_healthcheck_api_key', '' );
+        $db_key = get_option( 'npc_sd_api_key', '' );
         if ( $db_key ) {
             return $db_key;
         }
@@ -390,7 +392,7 @@ class NPC_WP_Healthcheck {
      * - 設定済みなら true（n-pc.jp 既存サイトはこの分岐で従来通りAI機能が動く）
      *
      * 全てのAI機能（管理画面ボタン・AJAX・Cron・メール通知）はこの判定を経由する。
-     * 判定結果を変えたい場合は `npc_healthcheck_ai_available` フィルタで上書き可能。
+     * 判定結果を変えたい場合は `npc_sd_ai_available` フィルタで上書き可能。
      *
      * @return bool
      */
@@ -402,7 +404,7 @@ class NPC_WP_Healthcheck {
          * AI機能の有効/無効をフィルタで上書き可能にする
          * 例: 一時的に AI 機能を停止したい場合に false を返す
          */
-        return (bool) apply_filters( 'npc_healthcheck_ai_available', $available );
+        return (bool) apply_filters( 'npc_sd_ai_available', $available );
     }
 
     // =========================================
@@ -414,7 +416,7 @@ class NPC_WP_Healthcheck {
      * 非公開・管理画面非表示（自前UIで管理するため）
      */
     public function register_log_cpt() {
-        register_post_type( NPC_HEALTHCHECK_CPT, array(
+        register_post_type( NPC_SD_CPT, array(
             'label'           => 'Healthcheck ログ',
             'public'          => false,
             'show_ui'         => false,
@@ -439,7 +441,7 @@ class NPC_WP_Healthcheck {
         $title = sprintf( '診断ログ %s', current_time( 'Y-m-d H:i' ) );
 
         $post_id = wp_insert_post( array(
-            'post_type'   => NPC_HEALTHCHECK_CPT,
+            'post_type'   => NPC_SD_CPT,
             'post_status' => 'publish',
             'post_title'  => $title,
         ), true );
@@ -551,7 +553,7 @@ class NPC_WP_Healthcheck {
      */
     private function cleanup_old_logs() {
         $all = get_posts( array(
-            'post_type'      => NPC_HEALTHCHECK_CPT,
+            'post_type'      => NPC_SD_CPT,
             'post_status'    => 'publish',
             'posts_per_page' => -1,
             'orderby'        => 'date',
@@ -559,11 +561,11 @@ class NPC_WP_Healthcheck {
             'fields'         => 'ids',
         ) );
 
-        if ( count( $all ) <= NPC_HEALTHCHECK_HISTORY_LIMIT ) {
+        if ( count( $all ) <= NPC_SD_HISTORY_LIMIT ) {
             return;
         }
 
-        $to_delete = array_slice( $all, NPC_HEALTHCHECK_HISTORY_LIMIT );
+        $to_delete = array_slice( $all, NPC_SD_HISTORY_LIMIT );
         foreach ( $to_delete as $id ) {
             wp_delete_post( $id, true ); // 即時削除（ゴミ箱を経由しない）
         }
@@ -577,9 +579,9 @@ class NPC_WP_Healthcheck {
      */
     public function get_healthcheck_logs() {
         $posts = get_posts( array(
-            'post_type'      => NPC_HEALTHCHECK_CPT,
+            'post_type'      => NPC_SD_CPT,
             'post_status'    => 'publish',
-            'posts_per_page' => NPC_HEALTHCHECK_HISTORY_LIMIT,
+            'posts_per_page' => NPC_SD_HISTORY_LIMIT,
             'orderby'        => 'date',
             'order'          => 'DESC',
         ) );
@@ -610,34 +612,34 @@ class NPC_WP_Healthcheck {
      */
     private function maybe_migrate_legacy_option() {
         // 既にCPT投稿がある、または既に移行済みフラグがあればスキップ
-        if ( get_option( 'npc_healthcheck_migrated_v04', false ) ) {
+        if ( get_option( 'npc_sd_migrated_v04', false ) ) {
             return;
         }
 
         $existing = get_posts( array(
-            'post_type'      => NPC_HEALTHCHECK_CPT,
+            'post_type'      => NPC_SD_CPT,
             'posts_per_page' => 1,
             'fields'         => 'ids',
         ) );
         if ( ! empty( $existing ) ) {
-            update_option( 'npc_healthcheck_migrated_v04', true );
+            update_option( 'npc_sd_migrated_v04', true );
             return;
         }
 
-        $legacy_results = get_option( 'npc_healthcheck_last_results', null );
+        $legacy_results = get_option( 'npc_sd_last_results', null );
         if ( empty( $legacy_results ) ) {
-            update_option( 'npc_healthcheck_migrated_v04', true );
+            update_option( 'npc_sd_migrated_v04', true );
             return;
         }
 
         $post_id = $this->save_healthcheck_log( $legacy_results );
         if ( ! is_wp_error( $post_id ) ) {
-            $legacy_report = get_option( 'npc_healthcheck_last_report', '' );
+            $legacy_report = get_option( 'npc_sd_last_report', '' );
             if ( $legacy_report ) {
                 $this->attach_report_to_log( $post_id, $legacy_report );
             }
             // 投稿日時を last_run の時刻に寄せる（保持できる場合）
-            $last_run = get_option( 'npc_healthcheck_last_run', '' );
+            $last_run = get_option( 'npc_sd_last_run', '' );
             if ( $last_run ) {
                 wp_update_post( array(
                     'ID'            => $post_id,
@@ -647,7 +649,7 @@ class NPC_WP_Healthcheck {
             }
         }
 
-        update_option( 'npc_healthcheck_migrated_v04', true );
+        update_option( 'npc_sd_migrated_v04', true );
     }
 
     // =========================================
@@ -668,18 +670,18 @@ class NPC_WP_Healthcheck {
             'WP Healthcheck',
             'Healthcheck',
             'manage_options',
-            'npc-healthcheck',
+            'npc-site-doctor',
             array( $this, 'render_dashboard' ),
             'dashicons-heart',
             80
         );
 
         add_submenu_page(
-            'npc-healthcheck',
+            'npc-site-doctor',
             '設定 — WP Healthcheck',
             '設定',
             'manage_options',
-            'npc-healthcheck-settings',
+            'npc-site-doctor-settings',
             array( $this, 'render_settings' )
         );
     }
@@ -688,7 +690,7 @@ class NPC_WP_Healthcheck {
      * 管理画面用のCSS/JSを読み込む
      */
     public function enqueue_admin_assets( $hook ) {
-        if ( strpos( $hook, 'npc-healthcheck' ) === false ) {
+        if ( strpos( $hook, 'npc-site-doctor' ) === false ) {
             return;
         }
 
@@ -698,30 +700,30 @@ class NPC_WP_Healthcheck {
         }
 
         wp_enqueue_style(
-            'npc-healthcheck-admin',
-            NPC_HEALTHCHECK_URL . 'assets/css/admin.css',
+            'npc-site-doctor-admin',
+            NPC_SD_URL . 'assets/css/admin.css',
             array(),
-            NPC_HEALTHCHECK_VERSION
+            NPC_SD_VERSION
         );
 
         wp_enqueue_script(
-            'npc-healthcheck-admin',
-            NPC_HEALTHCHECK_URL . 'assets/js/admin.js',
+            'npc-site-doctor-admin',
+            NPC_SD_URL . 'assets/js/admin.js',
             array( 'jquery' ),
-            NPC_HEALTHCHECK_VERSION,
+            NPC_SD_VERSION,
             true
         );
 
         // 診断履歴をJSに渡す（ダッシュボードHealthcheck画面でのみ）
         $history = array();
-        if ( strpos( $hook, 'npc-healthcheck' ) !== false && strpos( $hook, 'settings' ) === false ) {
+        if ( strpos( $hook, 'npc-site-doctor' ) !== false && strpos( $hook, 'settings' ) === false ) {
             $this->maybe_migrate_legacy_option();
             $history = $this->get_healthcheck_logs();
         }
 
-        wp_localize_script( 'npc-healthcheck-admin', 'npcHealthcheck', array(
+        wp_localize_script( 'npc-site-doctor-admin', 'npcHealthcheck', array(
             'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-            'nonce'    => wp_create_nonce( 'npc_healthcheck_nonce' ),
+            'nonce'    => wp_create_nonce( 'npc_sd_nonce' ),
             'history'  => $history,
             'siteName' => get_bloginfo( 'name' ),
         ) );
@@ -739,7 +741,7 @@ class NPC_WP_Healthcheck {
         $this->maybe_migrate_legacy_option();
 
         $api_key = self::get_api_key();
-        include NPC_HEALTHCHECK_PATH . 'templates/dashboard.php';
+        include NPC_SD_PATH . 'templates/dashboard.php';
     }
 
     /**
@@ -751,7 +753,7 @@ class NPC_WP_Healthcheck {
             wp_die( 'このページへのアクセス権限がありません。' );
         }
 
-        include NPC_HEALTHCHECK_PATH . 'templates/settings.php';
+        include NPC_SD_PATH . 'templates/settings.php';
     }
 
     // =========================================
@@ -763,23 +765,23 @@ class NPC_WP_Healthcheck {
      * 新しいログ投稿を作成し、その投稿IDを「現在のログ」としてoptionに記録する
      */
     public function ajax_run_healthcheck() {
-        check_ajax_referer( 'npc_healthcheck_nonce', 'nonce' );
+        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
             wp_send_json_error( 'この操作を実行する権限がありません。' );
         }
 
-        $checker = new NPC_Checker();
+        $checker = new NPC_SD_Checker();
         $results = $checker->run_all_checks();
 
         // 後方互換: optionにも最新分を保持
-        update_option( 'npc_healthcheck_last_results', $results );
-        update_option( 'npc_healthcheck_last_run', current_time( 'mysql' ) );
+        update_option( 'npc_sd_last_results', $results );
+        update_option( 'npc_sd_last_run', current_time( 'mysql' ) );
 
         // 履歴CPTに新しいログを作成
         $log_id = $this->save_healthcheck_log( $results );
         if ( ! is_wp_error( $log_id ) ) {
-            update_option( 'npc_healthcheck_current_log_id', $log_id );
+            update_option( 'npc_sd_current_log_id', $log_id );
         }
 
         wp_send_json_success( array(
@@ -794,7 +796,7 @@ class NPC_WP_Healthcheck {
      * 現在のログ投稿にレポートを紐付けて保存する
      */
     public function ajax_generate_report() {
-        check_ajax_referer( 'npc_healthcheck_nonce', 'nonce' );
+        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
             wp_send_json_error( 'この操作を実行する権限がありません。' );
@@ -803,15 +805,15 @@ class NPC_WP_Healthcheck {
         // AI機能が無効化されている（APIキー未設定）場合は早期エラー
         // フロント側で button が非表示でも、念のためサーバー側でも防御する
         if ( ! self::is_ai_available() ) {
-            wp_send_json_error( 'AIレポート機能は無効です。wp-config.php に NPC_HEALTHCHECK_API_KEY を設定するか、npc保守契約をご利用ください。' );
+            wp_send_json_error( 'AIレポート機能は無効です。wp-config.php に NPC_SD_API_KEY を設定するか、npc保守契約をご利用ください。' );
         }
 
-        $results = get_option( 'npc_healthcheck_last_results', array() );
+        $results = get_option( 'npc_sd_last_results', array() );
         if ( empty( $results ) ) {
             wp_send_json_error( '先に診断を実行してください。' );
         }
 
-        $reporter = new NPC_AI_Reporter();
+        $reporter = new NPC_SD_AI_Reporter();
         $report   = $reporter->generate( $results );
 
         if ( is_wp_error( $report ) ) {
@@ -819,10 +821,10 @@ class NPC_WP_Healthcheck {
         }
 
         // 後方互換
-        update_option( 'npc_healthcheck_last_report', $report );
+        update_option( 'npc_sd_last_report', $report );
 
         // 現在のログ投稿にレポートを紐付け
-        $log_id = (int) get_option( 'npc_healthcheck_current_log_id', 0 );
+        $log_id = (int) get_option( 'npc_sd_current_log_id', 0 );
         if ( $log_id && get_post_status( $log_id ) === 'publish' ) {
             $this->attach_report_to_log( $log_id, $report );
         }
@@ -839,7 +841,7 @@ class NPC_WP_Healthcheck {
      * - file_put_contents('') でファイル自体は残す（権限・所有者を維持）
      */
     public function ajax_clear_error_log() {
-        check_ajax_referer( 'npc_healthcheck_nonce', 'nonce' );
+        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
             wp_send_json_error( 'この操作を実行する権限がありません。' );
@@ -878,10 +880,10 @@ class NPC_WP_Healthcheck {
 
     /**
      * AJAX: 通知メールのテスト送信
-     * ダミーのcritical issueでNPC_Notifierを呼び、メール到達確認に使う
+     * ダミーのcritical issueでNPC_SD_Notifierを呼び、メール到達確認に使う
      */
     public function ajax_test_notification() {
-        check_ajax_referer( 'npc_healthcheck_nonce', 'nonce' );
+        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
             wp_send_json_error( 'この操作を実行する権限がありません。' );
@@ -912,7 +914,7 @@ class NPC_WP_Healthcheck {
             ),
         );
 
-        $sent = NPC_Notifier::send( $email, $dummy_results, $dummy_issues, '' );
+        $sent = NPC_SD_Notifier::send( $email, $dummy_results, $dummy_issues, '' );
 
         if ( ! $sent ) {
             wp_send_json_error( 'メール送信に失敗しました。WordPressのメール設定を確認してください。' );
@@ -926,4 +928,4 @@ class NPC_WP_Healthcheck {
 }
 
 // プラグイン起動
-NPC_WP_Healthcheck::get_instance();
+NPC_SD_Plugin::get_instance();

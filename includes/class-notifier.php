@@ -8,13 +8,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class NPC_Notifier {
+class NPC_SD_Notifier {
 
     /**
      * 診断結果から「critical扱いの項目」を抽出
      * 通知すべき深刻な問題があるかを判定するための正規化ロジック
      *
-     * @param array $results NPC_Checker::run_all_checks() の返り値
+     * @param array $results NPC_SD_Checker::run_all_checks() の返り値
      * @return array critical項目の配列 [{key, label, detail}, ...]
      */
     public static function detect_critical_issues( $results ) {
@@ -92,7 +92,7 @@ class NPC_Notifier {
 
         $site_name   = $results['site_info']['site_name'] ?? get_bloginfo( 'name' );
         $site_url    = $results['site_info']['site_url'] ?? get_site_url();
-        $admin_url   = admin_url( 'admin.php?page=npc-healthcheck' );
+        $admin_url   = admin_url( 'admin.php?page=npc-site-doctor' );
         $count       = count( $issues );
 
         $subject = sprintf( '[WP Healthcheck] %s で%d件の重大な問題を検出', $site_name, $count );
