@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class NPC_SD_AI_Reporter {
+class NPCMI_AI_Reporter {
 
     /** @var string Claude API endpoint */
     private $api_url = 'https://api.anthropic.com/v1/messages';
@@ -20,20 +20,20 @@ class NPC_SD_AI_Reporter {
     /**
      * Generate an AI maintenance report from diagnosis results.
      *
-     * @param array $results NPC_SD_Checker::run_all_checks() return value.
+     * @param array $results NPCMI_Checker::run_all_checks() return value.
      * @return string|WP_Error Report text or error.
      */
     public function generate( $results ) {
         // AI機能の利用可否を判定（wp-config.php定数 or DB旧キー、フィルタ対応）
-        if ( ! NPC_SD_Plugin::is_ai_available() ) {
+        if ( ! NPCMI_Plugin::is_ai_available() ) {
             return new WP_Error(
                 'ai_disabled',
-                __( 'AI report feature is disabled. Define NPC_SD_API_KEY in wp-config.php to enable it.', 'npc-site-doctor' )
+                __( 'AI report feature is disabled. Define NPCMI_API_KEY in wp-config.php to enable it.', 'npc-maintenance-inspector' )
             );
         }
 
         // 実際のキー値を取得（is_ai_available() で空でないことは保証済み）
-        $api_key = NPC_SD_Plugin::get_api_key();
+        $api_key = NPCMI_Plugin::get_api_key();
 
         // 診断結果をプロンプト用のテキストに整形
         $diagnosis_text = $this->format_results_for_prompt( $results );
@@ -63,7 +63,7 @@ class NPC_SD_AI_Reporter {
                 'api_error',
                 sprintf(
                     /* translators: %s: error message from wp_remote_post */
-                    __( 'Failed to connect to the Claude API: %s', 'npc-site-doctor' ),
+                    __( 'Failed to connect to the Claude API: %s', 'npc-maintenance-inspector' ),
                     $response->get_error_message()
                 )
             );
@@ -75,7 +75,7 @@ class NPC_SD_AI_Reporter {
         if ( $status_code !== 200 ) {
             $default_msg = sprintf(
                 /* translators: %d: HTTP status code */
-                __( 'API error (HTTP %d)', 'npc-site-doctor' ),
+                __( 'API error (HTTP %d)', 'npc-maintenance-inspector' ),
                 (int) $status_code
             );
             $error_msg = $body['error']['message'] ?? $default_msg;
@@ -88,7 +88,7 @@ class NPC_SD_AI_Reporter {
         if ( empty( $report_text ) ) {
             return new WP_Error(
                 'empty_response',
-                __( 'The AI returned an empty response.', 'npc-site-doctor' )
+                __( 'The AI returned an empty response.', 'npc-maintenance-inspector' )
             );
         }
 

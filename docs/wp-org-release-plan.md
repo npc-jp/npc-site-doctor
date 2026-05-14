@@ -1,4 +1,4 @@
-# NPC Site Doctor — WP.org公開向け実装計画書
+# NPC Maintenance Inspector — WP.org公開向け実装計画書
 
 **作成日**: 2026-05-11
 **バージョン**: v1.0.0 最小構成リリース版
@@ -9,7 +9,7 @@
 ## 0. 段階リリース戦略（最重要）
 
 ### v1.0.0（今日リリース）— **最小構成・約9.5h**
-- リネーム（`npc-wp-healthcheck` → `npc-site-doctor`）
+- リネーム（`npc-wp-healthcheck` → `npc-maintenance-inspector`）
 - i18n完全英語化
 - readme.txt作成（English + External services セクション）
 - 規約遵守（早期サニタイズ・admin_notices ガード等）
@@ -26,7 +26,7 @@
 - 共有秘密トークン認証ではなく Origin/UA + RateLimit + KillSwitch
 
 ### v1.3.0（v1.2後・約3h）
-- 既存20サイトから `npc-wp-healthcheck` → `npc-site-doctor` への自動マイグレータ
+- 既存20サイトから `npc-wp-healthcheck` → `npc-maintenance-inspector` への自動マイグレータ
 - option/CPT/cron/APIキー定数の互換移行
 
 ---
@@ -35,12 +35,12 @@
 
 | 項目 | 値 |
 |------|-----|
-| **slug** | `npc-site-doctor` （WP.org重複なし確認済） |
-| **表示名** | NPC Site Doctor |
+| **slug** | `npc-maintenance-inspector` （WP.org重複なし確認済） |
+| **表示名** | NPC Maintenance Inspector |
 | **バージョン** | v1.0.0 |
 | **Plugin URI** | `https://n-pc.jp/products/site-doctor/` |
 | **Author URI** | `https://n-pc.jp/`（Plugin URIと別物にする・lessons遵守） |
-| **Text Domain** | `npc-site-doctor` |
+| **Text Domain** | `npc-maintenance-inspector` |
 | **Requires at least** | WP 6.0 |
 | **Requires PHP** | 7.4 |
 | **License** | GPL v2 or later |
@@ -54,7 +54,7 @@
 
 | 作業 | 対象 | 時間 |
 |------|------|------|
-| GitHubに `npc-works/npc-site-doctor` 新規作成 | `gh repo create` | 10分 |
+| GitHubに `npc-works/npc-maintenance-inspector` 新規作成 | `gh repo create` | 10分 |
 | 旧リポを clone → 新リポへ push（履歴引継ぎ） | git | 20分 |
 | `dist/` / `blog-draft.html` / `DEPLOY.md` 等を `_internal/` へ退避＋`.gitignore`追加 | git mv/rm | 15分 |
 | 旧 README.md を `_internal/README-ja.md` に退避 | mv | 5分 |
@@ -67,13 +67,13 @@
 #### 1A. プラグインヘッダー・定数・クラス名リネーム（1.5h）
 
 ファイルリネーム:
-- `npc-wp-healthcheck.php` → `npc-site-doctor.php`
-- リポルートディレクトリ名も同様（zip展開時に `npc-site-doctor/` として展開される必要）
+- `npc-wp-healthcheck.php` → `npc-maintenance-inspector.php`
+- リポルートディレクトリ名も同様（zip展開時に `npc-maintenance-inspector/` として展開される必要）
 
 プラグインヘッダー書き換え:
 ```php
 /**
- * Plugin Name: NPC Site Doctor
+ * Plugin Name: NPC Maintenance Inspector
  * Plugin URI: https://n-pc.jp/products/site-doctor/
  * Description: WordPress maintenance health-check tool with 9-point diagnostics, history tracking, and optional AI-powered reports.
  * Version: 1.0.0
@@ -81,7 +81,7 @@
  * Author URI: https://n-pc.jp/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: npc-site-doctor
+ * Text Domain: npc-maintenance-inspector
  * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -89,27 +89,27 @@
 ```
 
 定数リネーム（約10箇所）:
-- `NPC_HEALTHCHECK_VERSION` → `NPC_SD_VERSION`
-- `NPC_HEALTHCHECK_PATH` → `NPC_SD_PATH`
-- `NPC_HEALTHCHECK_URL` → `NPC_SD_URL`
-- `NPC_HEALTHCHECK_CPT` → 値も `'nsd_log'` に変更（v1.3.0マイグレータで吸収）
-- `NPC_HEALTHCHECK_HISTORY_LIMIT` → `NPC_SD_HISTORY_LIMIT`
-- `NPC_HEALTHCHECK_CRON_HOOK` → `NPC_SD_CRON_HOOK`
+- `NPC_HEALTHCHECK_VERSION` → `NPCMI_VERSION`
+- `NPC_HEALTHCHECK_PATH` → `NPCMI_PATH`
+- `NPC_HEALTHCHECK_URL` → `NPCMI_URL`
+- `NPC_HEALTHCHECK_CPT` → 値も `'npcmi_log'` に変更（v1.3.0マイグレータで吸収）
+- `NPC_HEALTHCHECK_HISTORY_LIMIT` → `NPCMI_HISTORY_LIMIT`
+- `NPC_HEALTHCHECK_CRON_HOOK` → `NPCMI_CRON_HOOK`
 
 クラス名リネーム:
-- `NPC_WP_Healthcheck` → `NPC_SD_Plugin`
-- `NPC_Checker` → `NPC_SD_Checker`
-- `NPC_AI_Reporter` → `NPC_SD_AI_Reporter`
-- `NPC_Notifier` → `NPC_SD_Notifier`
+- `NPC_WP_Healthcheck` → `NPCMI_Plugin`
+- `NPC_Checker` → `NPCMI_Checker`
+- `NPC_AI_Reporter` → `NPCMI_AI_Reporter`
+- `NPC_Notifier` → `NPCMI_Notifier`
 
-option キー: 全 `npc_healthcheck_*` → `npc_sd_*` （16個前後・v1.0.0では旧キーフォールバック不要）
+option キー: 全 `npc_healthcheck_*` → `npcmi_*` （16個前後・v1.0.0では旧キーフォールバック不要）
 
 #### 1B. 早期サニタイズ強化（30分）
 
 参照: lessons[2026-05-05] WP.org審査保留対応チェックリスト
 
 修正箇所:
-- `npc-site-doctor.php` の `$_POST` 受信箇所:
+- `npc-maintenance-inspector.php` の `$_POST` 受信箇所:
   - `$_POST['auto_enabled']` → `(bool)` キャスト
   - `$_POST['auto_schedule']`, `$_POST['notify_email']` → 既に `sanitize_text_field( wp_unslash(...) )` 済 → そのまま
 - `templates/settings.php` の `$_GET['settings-updated']` → `sanitize_key( wp_unslash( $_GET['settings-updated'] ?? '' ) )`
@@ -117,7 +117,7 @@ option キー: 全 `npc_healthcheck_*` → `npc_sd_*` （16個前後・v1.0.0で
 
 #### 1C. i18n完全英語化（PHP・2.5h）
 
-全PHPファイルの日本語ハードコード文字列を `__( 'English source', 'npc-site-doctor' )` または `esc_html__()` で wrap。
+全PHPファイルの日本語ハードコード文字列を `__( 'English source', 'npc-maintenance-inspector' )` または `esc_html__()` で wrap。
 
 注意点（lessons[2026-05-05]）:
 - class property の default 値で `__()` を使えない（PHP仕様）→ コンストラクタで初期化
@@ -128,23 +128,23 @@ option キー: 全 `npc_healthcheck_*` → `npc_sd_*` （16個前後・v1.0.0で
 // Before
 wp_die( '権限がありません。' );
 // After
-wp_die( esc_html__( 'You do not have permission.', 'npc-site-doctor' ) );
+wp_die( esc_html__( 'You do not have permission.', 'npc-maintenance-inspector' ) );
 ```
 
 #### 1D. JS i18n対応（1.5h）
 
 `assets/js/admin.js` の日本語文字列（50+ 箇所推定）を `wp.i18n.__()` 経由に。
 
-PHP側で `wp_set_script_translations('npc-site-doctor-admin', 'npc-site-doctor', NPC_SD_PATH . 'languages')` を `enqueue_admin_assets()` に追加。
+PHP側で `wp_set_script_translations('npc-maintenance-inspector-admin', 'npc-maintenance-inspector', NPCMI_PATH . 'languages')` を `enqueue_admin_assets()` に追加。
 
 #### 1E. admin_notices スクリーンガード（20分）
 
-`npc-site-doctor.php` の `show_invalid_site_notice` を `get_current_screen()->id` が `toplevel_page_npc-site-doctor` 系で始まる場合のみ表示するよう wrap。
+`npc-maintenance-inspector.php` の `show_invalid_site_notice` を `get_current_screen()->id` が `toplevel_page_npc-maintenance-inspector` 系で始まる場合のみ表示するよう wrap。
 
 ```php
 add_action( 'admin_notices', function() {
     $screen = get_current_screen();
-    if ( ! $screen || strpos( $screen->id, 'npc-site-doctor' ) === false ) return;
+    if ( ! $screen || strpos( $screen->id, 'npc-maintenance-inspector' ) === false ) return;
     // 既存の notice 表示ロジック
 } );
 ```
@@ -153,20 +153,20 @@ add_action( 'admin_notices', function() {
 
 WP-CLI:
 ```bash
-wp i18n make-pot . languages/npc-site-doctor.pot --slug=npc-site-doctor
+wp i18n make-pot . languages/npc-maintenance-inspector.pot --slug=npc-maintenance-inspector
 ```
 
 日本語 .po/.mo:
 ```bash
-cp languages/npc-site-doctor.pot languages/npc-site-doctor-ja.po
+cp languages/npc-maintenance-inspector.pot languages/npc-maintenance-inspector-ja.po
 # msgstr に日本語訳を流し込み（Python スクリプトで自動化）
-msgfmt -o languages/npc-site-doctor-ja.mo languages/npc-site-doctor-ja.po
+msgfmt -o languages/npc-maintenance-inspector-ja.mo languages/npc-maintenance-inspector-ja.po
 ```
 
 #### 1G. readme.txt 作成（1h）
 
 WP.org規定フォーマット:
-- Plugin Name: NPC Site Doctor
+- Plugin Name: NPC Maintenance Inspector
 - Contributors: npc01
 - Tags: maintenance, healthcheck, diagnostics, security, monitoring
 - Requires at least: 6.0
@@ -196,7 +196,7 @@ grep 結果ゼロ確認済（現状未使用）→ 追加・削除作業不要
 | 日本語ロケール + 英語ロケール両方で UI確認 | 15分 |
 | `WP_DEBUG=true` で warning/notice ゼロ確認 | 15分 |
 | 機械的i18n検査: `grep -rP '[\\x{3040}-\\x{9fff}]' includes/ templates/ *.php` 残存ゼロ確認 | 10分 |
-| 配布zip作成: `zip -r npc-site-doctor-1.0.0.zip npc-site-doctor/ -x "**/.git/*" -x "**/_internal/*" -x "**/node_modules/*"` | 5分 |
+| 配布zip作成: `zip -r npc-maintenance-inspector-1.0.0.zip npc-maintenance-inspector/ -x "**/.git/*" -x "**/_internal/*" -x "**/node_modules/*"` | 5分 |
 | zip 内容 unzip -l で目視チェック（.sh/.bat/.exe/.git/dist 混入なし） | 15分 |
 | zip サイズ確認: 8MB以下（lessons[2026-05-06]） | 5分 |
 

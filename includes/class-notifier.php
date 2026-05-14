@@ -8,13 +8,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class NPC_SD_Notifier {
+class NPCMI_Notifier {
 
     /**
      * 診断結果から「critical扱いの項目」を抽出
      * 通知すべき深刻な問題があるかを判定するための正規化ロジック
      *
-     * @param array $results NPC_SD_Checker::run_all_checks() の返り値
+     * @param array $results NPCMI_Checker::run_all_checks() の返り値
      * @return array critical項目の配列 [{key, label, detail}, ...]
      */
     public static function detect_critical_issues( $results ) {
@@ -31,7 +31,7 @@ class NPC_SD_Notifier {
             }
             $issues[] = array(
                 'key'    => 'file_integrity_danger',
-                'label'  => __( 'Possible file tampering (suspicious code detected)', 'npc-site-doctor' ),
+                'label'  => __( 'Possible file tampering (suspicious code detected)', 'npc-maintenance-inspector' ),
                 'detail' => implode( "\n", $details ),
             );
         }
@@ -41,7 +41,7 @@ class NPC_SD_Notifier {
         if ( ! empty( $sf['suspicious_count'] ) && $sf['suspicious_count'] > 0 ) {
             $issues[] = array(
                 'key'    => 'suspicious_files',
-                'label'  => __( 'Suspicious PHP files in uploads directory', 'npc-site-doctor' ),
+                'label'  => __( 'Suspicious PHP files in uploads directory', 'npc-maintenance-inspector' ),
                 'detail' => implode( "\n", array_slice( $sf['suspicious_files'] ?? array(), 0, 10 ) ),
             );
         }
@@ -52,14 +52,14 @@ class NPC_SD_Notifier {
             $detail = isset( $ssl['days_left'] )
                 ? sprintf(
                     /* translators: 1: days remaining until expiry, 2: expiry date in YYYY-MM-DD */
-                    __( '%1$d days remaining (expires: %2$s)', 'npc-site-doctor' ),
+                    __( '%1$d days remaining (expires: %2$s)', 'npc-maintenance-inspector' ),
                     (int) $ssl['days_left'],
                     $ssl['expires_at']
                 )
                 : ( $ssl['note'] ?? '' );
             $issues[] = array(
                 'key'    => 'ssl_expiring',
-                'label'  => __( 'SSL certificate is expiring soon', 'npc-site-doctor' ),
+                'label'  => __( 'SSL certificate is expiring soon', 'npc-maintenance-inspector' ),
                 'detail' => $detail,
             );
         }
@@ -75,7 +75,7 @@ class NPC_SD_Notifier {
                 'key'    => 'site_health_critical',
                 'label'  => sprintf(
                     /* translators: %d: number of critical Site Health issues */
-                    __( 'Site Health critical issues: %d', 'npc-site-doctor' ),
+                    __( 'Site Health critical issues: %d', 'npc-maintenance-inspector' ),
                     (int) $sh['critical_count']
                 ),
                 'detail' => implode( "\n", $labels ),
@@ -101,12 +101,12 @@ class NPC_SD_Notifier {
 
         $site_name   = $results['site_info']['site_name'] ?? get_bloginfo( 'name' );
         $site_url    = $results['site_info']['site_url'] ?? get_site_url();
-        $admin_url   = admin_url( 'admin.php?page=npc-site-doctor' );
+        $admin_url   = admin_url( 'admin.php?page=npc-maintenance-inspector' );
         $count       = count( $issues );
 
         $subject = sprintf(
             /* translators: 1: site name, 2: number of critical issues */
-            __( '[NPC Site Doctor] %1$s detected %2$d critical issue(s)', 'npc-site-doctor' ),
+            __( '[NPC Maintenance Inspector] %1$s detected %2$d critical issue(s)', 'npc-maintenance-inspector' ),
             $site_name,
             $count
         );
@@ -114,12 +114,12 @@ class NPC_SD_Notifier {
         $lines   = array();
         $lines[] = sprintf(
             /* translators: 1: site name, 2: site URL */
-            __( 'An automated health-check on %1$s (%2$s) found issues that need attention.', 'npc-site-doctor' ),
+            __( 'An automated health-check on %1$s (%2$s) found issues that need attention.', 'npc-maintenance-inspector' ),
             $site_name,
             $site_url
         );
         $lines[] = '';
-        $lines[] = '── ' . __( 'Detected issues', 'npc-site-doctor' ) . ' ──';
+        $lines[] = '── ' . __( 'Detected issues', 'npc-maintenance-inspector' ) . ' ──';
 
         foreach ( $issues as $i => $issue ) {
             $num = $i + 1;
@@ -133,13 +133,13 @@ class NPC_SD_Notifier {
         }
 
         $lines[] = '';
-        $lines[] = '── ' . __( 'How to respond', 'npc-site-doctor' ) . ' ──';
-        $lines[] = __( 'See the full report in the admin dashboard:', 'npc-site-doctor' );
+        $lines[] = '── ' . __( 'How to respond', 'npc-maintenance-inspector' ) . ' ──';
+        $lines[] = __( 'See the full report in the admin dashboard:', 'npc-maintenance-inspector' );
         $lines[] = $admin_url;
 
         if ( ! empty( $ai_report ) ) {
             $lines[] = '';
-            $lines[] = '── ' . __( 'AI diagnostic report', 'npc-site-doctor' ) . ' ──';
+            $lines[] = '── ' . __( 'AI diagnostic report', 'npc-maintenance-inspector' ) . ' ──';
             // AIレポートからタグを除去してプレーンテキスト化
             $plain = self::ai_report_to_plain( $ai_report );
             $lines[] = $plain;
@@ -147,8 +147,8 @@ class NPC_SD_Notifier {
 
         $lines[] = '';
         $lines[] = '---';
-        $lines[] = __( 'This email was sent by the NPC Site Doctor automated health-check.', 'npc-site-doctor' );
-        $lines[] = __( 'To stop these notifications, go to NPC Site Doctor > Settings and disable automatic diagnostics.', 'npc-site-doctor' );
+        $lines[] = __( 'This email was sent by the NPC Maintenance Inspector automated health-check.', 'npc-maintenance-inspector' );
+        $lines[] = __( 'To stop these notifications, go to NPC Maintenance Inspector > Settings and disable automatic diagnostics.', 'npc-maintenance-inspector' );
 
         $body = implode( "\n", $lines );
 

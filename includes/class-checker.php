@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class NPC_SD_Checker {
+class NPCMI_Checker {
 
     /**
      * 全チェックを実行
@@ -96,8 +96,8 @@ class NPC_SD_Checker {
 
                 $updates_needed[] = array(
                     'name'            => $name,
-                    'current_version' => $all_plugins[ $plugin_file ]['Version'] ?? __( 'unknown', 'npc-site-doctor' ),
-                    'new_version'     => $plugin_data->new_version ?? __( 'unknown', 'npc-site-doctor' ),
+                    'current_version' => $all_plugins[ $plugin_file ]['Version'] ?? __( 'unknown', 'npc-maintenance-inspector' ),
+                    'new_version'     => $plugin_data->new_version ?? __( 'unknown', 'npc-maintenance-inspector' ),
                 );
             }
         }
@@ -184,13 +184,13 @@ class NPC_SD_Checker {
      * debug.logの直近エラーを取得する
      */
     private function check_error_log() {
-        $log_file = WP_CONTENT_DIR . '/debug.log';
+        $log_file = $this->get_debug_log_path();
 
-        if ( ! file_exists( $log_file ) ) {
+        if ( ! $log_file || ! file_exists( $log_file ) ) {
             return array(
                 'exists' => false,
                 'status' => 'ok',
-                'note'   => __( 'debug.log does not exist (WP_DEBUG may be disabled).', 'npc-site-doctor' ),
+                'note'   => __( 'debug.log does not exist (WP_DEBUG may be disabled).', 'npc-maintenance-inspector' ),
                 'errors' => array(),
             );
         }
@@ -262,7 +262,7 @@ class NPC_SD_Checker {
         if ( is_wp_error( $response ) ) {
             return array(
                 'status' => 'unknown',
-                'note'   => __( 'Could not connect to WordPress.org API.', 'npc-site-doctor' ),
+                'note'   => __( 'Could not connect to WordPress.org API.', 'npc-maintenance-inspector' ),
                 'modified_files' => array(),
             );
         }
@@ -272,7 +272,7 @@ class NPC_SD_Checker {
         if ( empty( $body['checksums'] ) ) {
             return array(
                 'status' => 'unknown',
-                'note'   => __( 'Could not retrieve checksum data.', 'npc-site-doctor' ),
+                'note'   => __( 'Could not retrieve checksum data.', 'npc-maintenance-inspector' ),
                 'modified_files' => array(),
             );
         }
@@ -361,11 +361,11 @@ class NPC_SD_Checker {
         // ノート生成
         $note = '';
         if ( $has_any_danger ) {
-            $note = __( 'Suspicious code patterns (eval, base64_decode, etc.) were detected. There is a high possibility of tampering, and immediate verification is required.', 'npc-site-doctor' );
+            $note = __( 'Suspicious code patterns (eval, base64_decode, etc.) were detected. There is a high possibility of tampering, and immediate verification is required.', 'npc-maintenance-inspector' );
         } elseif ( ! empty( $suspect_files ) && empty( $modified_files ) ) {
-            $note = __( 'Checksum mismatches were found, but no suspicious code (eval, base64_decode, etc.) was detected. This is likely a normal difference caused by locale or automatic WP updates.', 'npc-site-doctor' );
+            $note = __( 'Checksum mismatches were found, but no suspicious code (eval, base64_decode, etc.) was detected. This is likely a normal difference caused by locale or automatic WP updates.', 'npc-maintenance-inspector' );
         } elseif ( ! empty( $modified_files ) ) {
-            $note = __( 'Core files have checksum mismatches. No suspicious code was detected, but unintended changes may be present.', 'npc-site-doctor' );
+            $note = __( 'Core files have checksum mismatches. No suspicious code was detected, but unintended changes may be present.', 'npc-maintenance-inspector' );
         }
 
         return array(
@@ -398,32 +398,32 @@ class NPC_SD_Checker {
 
         // 改ざんでよく使われる危険パターン
         $danger_patterns = array(
-            'eval('                  => __( 'eval() — executes a string as PHP code. Not used in legitimate WP core.', 'npc-site-doctor' ),
-            'base64_decode('         => __( 'base64_decode() — often abused to hide encoded malicious code.', 'npc-site-doctor' ),
-            'gzinflate('             => __( 'gzinflate() — used to decompress malicious payloads.', 'npc-site-doctor' ),
-            'str_rot13('             => __( 'str_rot13() — used for code obfuscation.', 'npc-site-doctor' ),
+            'eval('                  => __( 'eval() — executes a string as PHP code. Not used in legitimate WP core.', 'npc-maintenance-inspector' ),
+            'base64_decode('         => __( 'base64_decode() — often abused to hide encoded malicious code.', 'npc-maintenance-inspector' ),
+            'gzinflate('             => __( 'gzinflate() — used to decompress malicious payloads.', 'npc-maintenance-inspector' ),
+            'str_rot13('             => __( 'str_rot13() — used for code obfuscation.', 'npc-maintenance-inspector' ),
             'preg_replace'           => false, // 単体では正規利用が多いのでスキップ
-            'assert('                => __( 'assert() — eval-equivalent dangerous function.', 'npc-site-doctor' ),
-            'create_function('       => __( 'create_function() — deprecated function that builds code dynamically.', 'npc-site-doctor' ),
+            'assert('                => __( 'assert() — eval-equivalent dangerous function.', 'npc-maintenance-inspector' ),
+            'create_function('       => __( 'create_function() — deprecated function that builds code dynamically.', 'npc-maintenance-inspector' ),
             'call_user_func('        => false, // 正規利用が多い
-            'shell_exec('            => __( 'shell_exec() — executes a shell command on the server.', 'npc-site-doctor' ),
-            'passthru('              => __( 'passthru() — runs external commands.', 'npc-site-doctor' ),
+            'shell_exec('            => __( 'shell_exec() — executes a shell command on the server.', 'npc-maintenance-inspector' ),
+            'passthru('              => __( 'passthru() — runs external commands.', 'npc-maintenance-inspector' ),
             'system('                => false, // 誤検知が多いのでスキップ
             '$$'                     => false, // 可変変数は正規利用が多い
             'file_put_contents('     => false, // 正規利用あり
-            'chmod('                 => __( 'chmod() — changes file permissions. Should not appear in core files.', 'npc-site-doctor' ),
-            'error_reporting(0)'     => __( 'error_reporting(0) — intentionally hides error output.', 'npc-site-doctor' ),
+            'chmod('                 => __( 'chmod() — changes file permissions. Should not appear in core files.', 'npc-maintenance-inspector' ),
+            'error_reporting(0)'     => __( 'error_reporting(0) — intentionally hides error output.', 'npc-maintenance-inspector' ),
             '@ini_set'               => false, // 正規利用あり
         );
 
         // 難読化パターン（正規表現で検出）
         $regex_patterns = array(
             '/\\\\x[0-9a-f]{2}.*\\\\x[0-9a-f]{2}.*\\\\x[0-9a-f]{2}/i'
-                => __( 'Consecutive hex escapes — a common code obfuscation pattern.', 'npc-site-doctor' ),
+                => __( 'Consecutive hex escapes — a common code obfuscation pattern.', 'npc-maintenance-inspector' ),
             '/\$[a-zA-Z_]+\s*=\s*["\'][A-Za-z0-9+\/=]{100,}["\']/'
-                => __( 'Long Base64 string assignment — possible encoded malicious payload.', 'npc-site-doctor' ),
+                => __( 'Long Base64 string assignment — possible encoded malicious payload.', 'npc-maintenance-inspector' ),
             '/\$[a-zA-Z_]+\(\s*\$[a-zA-Z_]+\s*\(/'
-                => __( 'Nested variable function call — dynamic code execution obfuscation pattern.', 'npc-site-doctor' ),
+                => __( 'Nested variable function call — dynamic code execution obfuscation pattern.', 'npc-maintenance-inspector' ),
         );
 
         // 文字列パターンの検出
@@ -456,10 +456,12 @@ class NPC_SD_Checker {
     private function check_suspicious_files() {
         $suspicious = array();
 
-        // チェック対象ディレクトリ
-        $check_dirs = array(
-            WP_CONTENT_DIR . '/uploads', // アップロードディレクトリにPHPがあったら怪しい
-        );
+        // アップロードディレクトリにPHPがあったら怪しい
+        $upload_info = wp_upload_dir();
+        $check_dirs  = array();
+        if ( ! empty( $upload_info['basedir'] ) ) {
+            $check_dirs[] = $upload_info['basedir'];
+        }
 
         foreach ( $check_dirs as $dir ) {
             if ( ! is_dir( $dir ) ) continue;
@@ -673,7 +675,7 @@ class NPC_SD_Checker {
         if ( strpos( $site_url, 'https://' ) !== 0 ) {
             return array(
                 'status' => 'warning',
-                'note'   => __( 'Site is not using HTTPS.', 'npc-site-doctor' ),
+                'note'   => __( 'Site is not using HTTPS.', 'npc-maintenance-inspector' ),
             );
         }
 
@@ -701,7 +703,7 @@ class NPC_SD_Checker {
                 'status' => 'unknown',
                 'note'   => sprintf(
                     /* translators: %s: SSL error message from stream_socket_client */
-                    __( 'SSL connection failed: %s', 'npc-site-doctor' ),
+                    __( 'SSL connection failed: %s', 'npc-maintenance-inspector' ),
                     $errstr
                 ),
             );
@@ -714,7 +716,7 @@ class NPC_SD_Checker {
         if ( ! $cert ) {
             return array(
                 'status' => 'unknown',
-                'note'   => __( 'Failed to parse certificate.', 'npc-site-doctor' ),
+                'note'   => __( 'Failed to parse certificate.', 'npc-maintenance-inspector' ),
             );
         }
 
@@ -731,7 +733,7 @@ class NPC_SD_Checker {
 
         return array(
             'status'     => $status,
-            'issuer'     => $cert['issuer']['O'] ?? __( 'unknown', 'npc-site-doctor' ),
+            'issuer'     => $cert['issuer']['O'] ?? __( 'unknown', 'npc-maintenance-inspector' ),
             'expires_at' => date( 'Y-m-d', $expires_at ),
             'days_left'  => $days_left,
         );
@@ -742,15 +744,24 @@ class NPC_SD_Checker {
      * 重要ファイル/ディレクトリのパーミッションが適切か確認
      */
     private function check_file_permissions() {
+        $upload_info = wp_upload_dir();
+        $uploads_dir = ! empty( $upload_info['basedir'] ) ? $upload_info['basedir'] : null;
+        $themes_root = get_theme_root();
+
         $checks = array(
             // ファイルパス => 推奨パーミッション
-            array( 'path' => ABSPATH . 'wp-config.php',   'recommended' => '0440', 'type' => 'file' ),
-            array( 'path' => ABSPATH . '.htaccess',        'recommended' => '0644', 'type' => 'file' ),
-            array( 'path' => WP_CONTENT_DIR,               'recommended' => '0755', 'type' => 'dir' ),
-            array( 'path' => WP_CONTENT_DIR . '/uploads',  'recommended' => '0755', 'type' => 'dir' ),
-            array( 'path' => WP_CONTENT_DIR . '/plugins',  'recommended' => '0755', 'type' => 'dir' ),
-            array( 'path' => WP_CONTENT_DIR . '/themes',   'recommended' => '0755', 'type' => 'dir' ),
+            array( 'path' => ABSPATH . 'wp-config.php', 'recommended' => '0440', 'type' => 'file' ),
+            array( 'path' => ABSPATH . '.htaccess',     'recommended' => '0644', 'type' => 'file' ),
+            array( 'path' => WP_CONTENT_DIR,            'recommended' => '0755', 'type' => 'dir' ),
+            array( 'path' => WP_PLUGIN_DIR,             'recommended' => '0755', 'type' => 'dir' ),
         );
+
+        if ( $uploads_dir ) {
+            $checks[] = array( 'path' => $uploads_dir, 'recommended' => '0755', 'type' => 'dir' );
+        }
+        if ( $themes_root ) {
+            $checks[] = array( 'path' => $themes_root, 'recommended' => '0755', 'type' => 'dir' );
+        }
 
         $results  = array();
         $warnings = 0;
@@ -777,5 +788,23 @@ class NPC_SD_Checker {
             'warnings' => $warnings,
             'checks'   => $results,
         );
+    }
+
+    /**
+     * debug.log のパスを取得（WP_DEBUG_LOG 定数を尊重）
+     * - WP_DEBUG_LOG が文字列ならカスタムパス
+     * - true なら標準位置（WP_CONTENT_DIR/debug.log）
+     * - それ以外なら null
+     */
+    public function get_debug_log_path() {
+        if ( defined( 'WP_DEBUG_LOG' ) ) {
+            if ( is_string( WP_DEBUG_LOG ) && WP_DEBUG_LOG !== '' ) {
+                return WP_DEBUG_LOG;
+            }
+            if ( WP_DEBUG_LOG === true ) {
+                return WP_CONTENT_DIR . '/debug.log';
+            }
+        }
+        return null;
     }
 }

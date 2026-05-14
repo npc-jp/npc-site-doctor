@@ -1,4 +1,4 @@
-=== NPC Site Doctor ===
+=== NPC Maintenance Inspector ===
 Contributors: npc01
 Tags: maintenance, healthcheck, diagnostics, security, monitoring
 Requires at least: 6.0
@@ -12,13 +12,13 @@ WordPress maintenance health-check tool with 9-point diagnostics, history tracki
 
 == Description ==
 
-NPC Site Doctor performs 9-point health diagnostics on your WordPress site directly from the admin dashboard:
+NPC Maintenance Inspector performs 9-point health diagnostics on your WordPress site directly from the admin dashboard:
 
 1. **WordPress core updates** — Detect missing core updates.
 2. **Plugin updates** — List plugins with available updates.
 3. **Site Health issues** — Extract critical issues from WP standard Site Health API.
 4. **PHP version** — Warn on end-of-life PHP versions.
-5. **Error log analysis** — Summarize debug.log entries (with one-click clear).
+5. **Error log analysis** — Summarize debug.log entries and save a one-click backup to uploads/ for safe review.
 6. **File integrity** — Detect suspicious code patterns in core files (eval / base64_decode / etc.) by comparing checksums against the WordPress.org Checksum API.
 7. **Suspicious files** — Find unexpected PHP files in wp-content/uploads/, with built-in whitelist for known legitimate plugin files (Ajax Load More templates, WP STAGING index.php, AIOS firewall rules, etc.).
 8. **SSL certificate** — Check days until expiration (warn under 30 days, critical at 0).
@@ -37,11 +37,11 @@ The plugin is locked to the user who activated it and to the original site URL, 
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/` or install it via **Plugins → Add New** in the admin.
-2. Activate **NPC Site Doctor** through the **Plugins** menu.
-3. Open **Site Doctor** in the admin sidebar.
+2. Activate **NPC Maintenance Inspector** through the **Plugins** menu.
+3. Open **NPC Inspector** in the admin sidebar.
 4. Click **Run Diagnosis** to start a manual check.
-5. (Optional) Open **Site Doctor → Settings** to enable scheduled auto-checks and email notifications.
-6. (Optional) Define `NPC_SD_API_KEY` in `wp-config.php` to enable the AI report feature (see FAQ).
+5. (Optional) Open **NPC Inspector → Settings** to enable scheduled auto-checks and email notifications.
+6. (Optional) Define `NPCMI_API_KEY` in `wp-config.php` to enable the AI report feature (see FAQ).
 
 == Frequently Asked Questions ==
 
@@ -49,7 +49,7 @@ The plugin is locked to the user who activated it and to the original site URL, 
 
 No. AI report is optional and **disabled by default**. To enable it, add this line above `/* That's all, stop editing! */` in your `wp-config.php`:
 
-`define( 'NPC_SD_API_KEY', 'sk-ant-xxxx' );`
+`define( 'NPCMI_API_KEY', 'sk-ant-xxxx' );`
 
 Without that constant the plugin still runs all 9 diagnostics, scheduled checks, email notifications, and history.
 
@@ -102,7 +102,7 @@ This plugin can optionally connect to the **Anthropic Claude API** (`https://api
 
 **Is the data sent unconditionally?**
 
-No. The AI feature is **completely disabled** unless you define `NPC_SD_API_KEY` in `wp-config.php`. Without that constant, no external connection to Anthropic is ever made.
+No. The AI feature is **completely disabled** unless you define `NPCMI_API_KEY` in `wp-config.php`. Without that constant, no external connection to Anthropic is ever made.
 
 **Anthropic's terms and privacy policy:**
 
@@ -110,7 +110,7 @@ No. The AI feature is **completely disabled** unless you define `NPC_SD_API_KEY`
 * Privacy Policy: https://www.anthropic.com/legal/privacy
 * Commercial Terms of Service (if you use a paid API plan): https://www.anthropic.com/legal/commercial-terms
 
-By enabling the AI report feature (i.e. by defining `NPC_SD_API_KEY`), you agree to Anthropic's applicable terms.
+By enabling the AI report feature (i.e. by defining `NPCMI_API_KEY`), you agree to Anthropic's applicable terms.
 
 == Changelog ==
 
@@ -120,7 +120,7 @@ By enabling the AI report feature (i.e. by defining `NPC_SD_API_KEY`), you agree
 * Diagnosis history (last 10 entries) stored as a custom post type.
 * WP Cron-based auto-check (daily / weekly / monthly).
 * Email notifications on critical issues only.
-* Optional AI-powered maintenance reports via Anthropic Claude API (opt-in via `NPC_SD_API_KEY`).
+* Optional AI-powered maintenance reports via Anthropic Claude API (opt-in via `NPCMI_API_KEY`).
 * Full internationalization (English source strings, Japanese translation included).
 
 == Upgrade Notice ==

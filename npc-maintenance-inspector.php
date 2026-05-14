@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: NPC Site Doctor
- * Plugin URI: https://n-pc.jp/products/site-doctor/
+ * Plugin Name: NPC Maintenance Inspector
+ * Plugin URI: https://n-pc.jp/products/maintenance-inspector/
  * Description: WordPress maintenance health-check tool with 9-point diagnostics, history tracking, and optional AI-powered reports.
  * Version: 1.0.0
  * Author: npc
  * Author URI: https://n-pc.jp/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: npc-site-doctor
+ * Text Domain: npc-maintenance-inspector
  * Domain Path: /languages
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -20,22 +20,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // プラグイン定数
-define( 'NPC_SD_VERSION', '1.0.0' );
-define( 'NPC_SD_PATH', plugin_dir_path( __FILE__ ) );
-define( 'NPC_SD_URL', plugin_dir_url( __FILE__ ) );
+define( 'NPCMI_VERSION', '1.0.0' );
+define( 'NPCMI_PATH', plugin_dir_path( __FILE__ ) );
+define( 'NPCMI_URL', plugin_dir_url( __FILE__ ) );
 
 // 診断履歴CPTと保持件数
-define( 'NPC_SD_CPT', 'nsd_log' );
-define( 'NPC_SD_HISTORY_LIMIT', 10 );
+define( 'NPCMI_CPT', 'npcmi_log' );
+define( 'NPCMI_HISTORY_LIMIT', 10 );
 
 // 自動診断のcronフック名
-define( 'NPC_SD_CRON_HOOK', 'npc_sd_auto_check' );
+define( 'NPCMI_CRON_HOOK', 'npcmi_auto_check' );
 
 /**
  * メインクラス
  * プラグイン全体の初期化と管理画面の登録を担当
  */
-class NPC_SD_Plugin {
+class NPCMI_Plugin {
 
     /** @var self|null シングルトンインスタンス */
     private static $instance = null;
@@ -66,7 +66,7 @@ class NPC_SD_Plugin {
         add_filter( 'cron_schedules', array( $this, 'add_custom_cron_schedules' ) );
 
         // 自動診断のcronフック
-        add_action( NPC_SD_CRON_HOOK, array( $this, 'run_auto_check' ) );
+        add_action( NPCMI_CRON_HOOK, array( $this, 'run_auto_check' ) );
 
         // DB上の旧APIキーをクリーンアップ（再有効化不要で即時実行）
         $this->maybe_cleanup_db_api_key();
@@ -87,28 +87,28 @@ class NPC_SD_Plugin {
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 
         // AJAX: 診断実行（許可ユーザーチェック付き）
-        add_action( 'wp_ajax_npc_sd_run_healthcheck', array( $this, 'ajax_run_healthcheck' ) );
+        add_action( 'wp_ajax_npcmi_run_healthcheck', array( $this, 'ajax_run_healthcheck' ) );
 
         // AJAX: AIレポート生成（許可ユーザーチェック付き）
-        add_action( 'wp_ajax_npc_sd_generate_report', array( $this, 'ajax_generate_report' ) );
+        add_action( 'wp_ajax_npcmi_generate_report', array( $this, 'ajax_generate_report' ) );
 
         // AJAX: debug.logクリア
-        add_action( 'wp_ajax_npc_sd_clear_error_log', array( $this, 'ajax_clear_error_log' ) );
+        add_action( 'wp_ajax_npcmi_backup_error_log', array( $this, 'ajax_backup_error_log' ) );
 
         // 自動診断の設定保存（admin-post経由）
-        add_action( 'admin_post_npc_sd_save_auto_settings', array( $this, 'handle_save_auto_settings' ) );
+        add_action( 'admin_post_npcmi_save_auto_settings', array( $this, 'handle_save_auto_settings' ) );
 
         // AJAX: 通知テストメール送信
-        add_action( 'wp_ajax_npc_sd_test_notification', array( $this, 'ajax_test_notification' ) );
+        add_action( 'wp_ajax_npcmi_test_notification', array( $this, 'ajax_test_notification' ) );
     }
 
     /**
      * 依存ファイルの読み込み
      */
     private function load_dependencies() {
-        require_once NPC_SD_PATH . 'includes/class-checker.php';
-        require_once NPC_SD_PATH . 'includes/class-ai-reporter.php';
-        require_once NPC_SD_PATH . 'includes/class-notifier.php';
+        require_once NPCMI_PATH . 'includes/class-checker.php';
+        require_once NPCMI_PATH . 'includes/class-ai-reporter.php';
+        require_once NPCMI_PATH . 'includes/class-notifier.php';
     }
 
     /**
@@ -116,8 +116,8 @@ class NPC_SD_Plugin {
      * 毎回チェックするが、delete_optionは存在しなければ何もしないので軽い
      */
     private function maybe_cleanup_db_api_key() {
-        if ( defined( 'NPC_SD_API_KEY' ) && NPC_SD_API_KEY ) {
-            delete_option( 'npc_sd_api_key' );
+        if ( defined( 'NPCMI_API_KEY' ) && NPCMI_API_KEY ) {
+            delete_option( 'npcmi_api_key' );
         }
     }
 
@@ -132,23 +132,23 @@ class NPC_SD_Plugin {
      */
     public function on_activation() {
         // 許可ユーザーが未設定の場合だけ記録（初回のみ）
-        if ( ! get_option( 'npc_sd_allowed_user_id' ) ) {
+        if ( ! get_option( 'npcmi_allowed_user_id' ) ) {
             $current_user = wp_get_current_user();
-            update_option( 'npc_sd_allowed_user_id', $current_user->ID );
-            update_option( 'npc_sd_allowed_user_email', $current_user->user_email );
+            update_option( 'npcmi_allowed_user_id', $current_user->ID );
+            update_option( 'npcmi_allowed_user_email', $current_user->user_email );
         }
 
         // サイトURLが未設定の場合だけ記録（初回のみ）
-        if ( ! get_option( 'npc_sd_bound_site_url' ) ) {
-            update_option( 'npc_sd_bound_site_url', get_site_url() );
+        if ( ! get_option( 'npcmi_bound_site_url' ) ) {
+            update_option( 'npcmi_bound_site_url', get_site_url() );
         }
 
         // セットアップ完了フラグ
-        update_option( 'npc_sd_setup_done', true );
+        update_option( 'npcmi_setup_done', true );
 
         // wp-config.phpにAPIキーが定義されていれば、DB上の旧キーを削除（セキュリティ強化）
-        if ( defined( 'NPC_SD_API_KEY' ) && NPC_SD_API_KEY ) {
-            delete_option( 'npc_sd_api_key' );
+        if ( defined( 'NPCMI_API_KEY' ) && NPCMI_API_KEY ) {
+            delete_option( 'npcmi_api_key' );
         }
     }
 
@@ -157,7 +157,7 @@ class NPC_SD_Plugin {
      * 自動診断が無効化後も動き続けるのを防ぐ
      */
     public function on_deactivation() {
-        wp_clear_scheduled_hook( NPC_SD_CRON_HOOK );
+        wp_clear_scheduled_hook( NPCMI_CRON_HOOK );
     }
 
     // =========================================
@@ -172,13 +172,13 @@ class NPC_SD_Plugin {
         if ( ! isset( $schedules['weekly'] ) ) {
             $schedules['weekly'] = array(
                 'interval' => 7 * DAY_IN_SECONDS,
-                'display'  => __( 'Once Weekly', 'npc-site-doctor' ),
+                'display'  => __( 'Once Weekly', 'npc-maintenance-inspector' ),
             );
         }
         if ( ! isset( $schedules['monthly'] ) ) {
             $schedules['monthly'] = array(
                 'interval' => 30 * DAY_IN_SECONDS,
-                'display'  => __( 'Once Monthly', 'npc-site-doctor' ),
+                'display'  => __( 'Once Monthly', 'npc-maintenance-inspector' ),
             );
         }
         return $schedules;
@@ -191,7 +191,7 @@ class NPC_SD_Plugin {
      * @param string $schedule 'daily' | 'weekly' | 'monthly'
      */
     public function schedule_auto_check( $schedule ) {
-        wp_clear_scheduled_hook( NPC_SD_CRON_HOOK );
+        wp_clear_scheduled_hook( NPCMI_CRON_HOOK );
 
         $valid = array( 'daily', 'weekly', 'monthly' );
         if ( ! in_array( $schedule, $valid, true ) ) {
@@ -199,7 +199,7 @@ class NPC_SD_Plugin {
         }
 
         // 初回は1時間後から開始（即時実行を避けてユーザーの想定外を防ぐ）
-        wp_schedule_event( time() + HOUR_IN_SECONDS, $schedule, NPC_SD_CRON_HOOK );
+        wp_schedule_event( time() + HOUR_IN_SECONDS, $schedule, NPCMI_CRON_HOOK );
     }
 
     /**
@@ -208,11 +208,11 @@ class NPC_SD_Plugin {
      */
     public function run_auto_check() {
         // 自動診断がOFFなら何もしない（設定変更のタイミング次第で残留cron対策）
-        if ( ! get_option( 'npc_sd_auto_enabled', false ) ) {
+        if ( ! get_option( 'npcmi_auto_enabled', false ) ) {
             return;
         }
 
-        $checker = new NPC_SD_Checker();
+        $checker = new NPCMI_Checker();
         $results = $checker->run_all_checks();
 
         // 履歴CPTに保存
@@ -221,11 +221,11 @@ class NPC_SD_Plugin {
             return;
         }
 
-        update_option( 'npc_sd_last_results', $results );
-        update_option( 'npc_sd_last_run', current_time( 'mysql' ) );
+        update_option( 'npcmi_last_results', $results );
+        update_option( 'npcmi_last_run', current_time( 'mysql' ) );
 
         // critical検出判定
-        $issues = NPC_SD_Notifier::detect_critical_issues( $results );
+        $issues = NPCMI_Notifier::detect_critical_issues( $results );
         if ( empty( $issues ) ) {
             return; // critical なしなら通知不要
         }
@@ -234,11 +234,11 @@ class NPC_SD_Plugin {
         // APIキー未設定（GitHub公開版）の場合はAI機能をスキップし、メール通知のみ送る
         $report = '';
         if ( self::is_ai_available() ) {
-            $reporter = new NPC_SD_AI_Reporter();
+            $reporter = new NPCMI_AI_Reporter();
             $maybe_report = $reporter->generate( $results );
             if ( ! is_wp_error( $maybe_report ) ) {
                 $report = $maybe_report;
-                update_option( 'npc_sd_last_report', $report );
+                update_option( 'npcmi_last_report', $report );
                 $this->attach_report_to_log( $log_id, $report );
             }
         }
@@ -246,8 +246,8 @@ class NPC_SD_Plugin {
         // 通知メール送信
         $email = $this->get_notify_email();
         if ( $email ) {
-            NPC_SD_Notifier::send( $email, $results, $issues, $report );
-            update_option( 'npc_sd_last_notified', current_time( 'mysql' ) );
+            NPCMI_Notifier::send( $email, $results, $issues, $report );
+            update_option( 'npcmi_last_notified', current_time( 'mysql' ) );
         }
     }
 
@@ -256,11 +256,11 @@ class NPC_SD_Plugin {
      * 未設定なら許可ユーザーのメアドにフォールバック
      */
     private function get_notify_email() {
-        $configured = get_option( 'npc_sd_notify_email', '' );
+        $configured = get_option( 'npcmi_notify_email', '' );
         if ( is_email( $configured ) ) {
             return $configured;
         }
-        $allowed = get_option( 'npc_sd_allowed_user_email', '' );
+        $allowed = get_option( 'npcmi_allowed_user_email', '' );
         return is_email( $allowed ) ? $allowed : '';
     }
 
@@ -269,12 +269,12 @@ class NPC_SD_Plugin {
      */
     public function handle_save_auto_settings() {
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-site-doctor' ) );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-maintenance-inspector' ) );
         }
-        check_admin_referer( 'npc_sd_auto_settings' );
+        check_admin_referer( 'npcmi_auto_settings' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_die( esc_html__( 'You are not the authorized user for this plugin.', 'npc-site-doctor' ) );
+            wp_die( esc_html__( 'You are not the authorized user for this plugin.', 'npc-maintenance-inspector' ) );
         }
 
         // 早期サニタイズ: bool キャストで unslash 不要に統一
@@ -287,18 +287,18 @@ class NPC_SD_Plugin {
             $schedule = 'weekly';
         }
 
-        update_option( 'npc_sd_auto_enabled', $enabled );
-        update_option( 'npc_sd_auto_schedule', $schedule );
-        update_option( 'npc_sd_notify_email', $email );
+        update_option( 'npcmi_auto_enabled', $enabled );
+        update_option( 'npcmi_auto_schedule', $schedule );
+        update_option( 'npcmi_notify_email', $email );
 
         // cron再登録
         if ( $enabled ) {
             $this->schedule_auto_check( $schedule );
         } else {
-            wp_clear_scheduled_hook( NPC_SD_CRON_HOOK );
+            wp_clear_scheduled_hook( NPCMI_CRON_HOOK );
         }
 
-        wp_safe_redirect( add_query_arg( 'settings-updated', 'true', admin_url( 'admin.php?page=npc-site-doctor-settings' ) ) );
+        wp_safe_redirect( add_query_arg( 'settings-updated', 'true', admin_url( 'admin.php?page=npc-maintenance-inspector-settings' ) ) );
         exit;
     }
 
@@ -310,18 +310,18 @@ class NPC_SD_Plugin {
         $current_user = wp_get_current_user();
 
         // まだセットアップ前ならfalse
-        if ( ! get_option( 'npc_sd_setup_done' ) ) {
+        if ( ! get_option( 'npcmi_setup_done' ) ) {
             return false;
         }
 
         // メールアドレスで照合（IDが違うサイトでも一致する）
-        $allowed_email = get_option( 'npc_sd_allowed_user_email', '' );
+        $allowed_email = get_option( 'npcmi_allowed_user_email', '' );
         if ( $current_user->user_email === $allowed_email ) {
             return true;
         }
 
         // フォールバック: ユーザーIDでも照合
-        $allowed_id = get_option( 'npc_sd_allowed_user_id', 0 );
+        $allowed_id = get_option( 'npcmi_allowed_user_id', 0 );
         if ( $current_user->ID === (int) $allowed_id ) {
             return true;
         }
@@ -335,7 +335,7 @@ class NPC_SD_Plugin {
      * バックアップ復元で別ドメインに移された場合をブロック
      */
     private function is_valid_site() {
-        $bound_url   = get_option( 'npc_sd_bound_site_url', '' );
+        $bound_url   = get_option( 'npcmi_bound_site_url', '' );
         $current_url = get_site_url();
 
         // まだ紐付けされていない（初回有効化前）場合はOK
@@ -359,20 +359,20 @@ class NPC_SD_Plugin {
 
         // Screen guard: show only on this plugin's pages or core dashboard, avoid hijacking other plugins' screens.
         $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-        if ( $screen && strpos( (string) $screen->id, 'npc-site-doctor' ) === false && $screen->id !== 'dashboard' && $screen->id !== 'plugins' ) {
+        if ( $screen && strpos( (string) $screen->id, 'npc-maintenance-inspector' ) === false && $screen->id !== 'dashboard' && $screen->id !== 'plugins' ) {
             return;
         }
 
-        $bound_url = get_option( 'npc_sd_bound_site_url', '' );
+        $bound_url = get_option( 'npcmi_bound_site_url', '' );
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>NPC Site Doctor:</strong> ';
+        echo '<strong>NPC Maintenance Inspector:</strong> ';
         printf(
             /* translators: %s: the original site URL the plugin was bound to */
-            esc_html__( 'This plugin was set up for %s.', 'npc-site-doctor' ),
+            esc_html__( 'This plugin was set up for %s.', 'npc-maintenance-inspector' ),
             '<code>' . esc_html( $bound_url ) . '</code>'
         );
         echo ' ';
-        echo esc_html__( 'It cannot be used on a different site. To re-setup, delete the npc_sd_bound_site_url option from the database and re-activate the plugin.', 'npc-site-doctor' );
+        echo esc_html__( 'It cannot be used on a different site. To re-setup, delete the npcmi_bound_site_url option from the database and re-activate the plugin.', 'npc-maintenance-inspector' );
         echo '</p></div>';
     }
 
@@ -382,12 +382,12 @@ class NPC_SD_Plugin {
      */
     public static function get_api_key() {
         // wp-config.php の定数を最優先
-        if ( defined( 'NPC_SD_API_KEY' ) && NPC_SD_API_KEY ) {
-            return NPC_SD_API_KEY;
+        if ( defined( 'NPCMI_API_KEY' ) && NPCMI_API_KEY ) {
+            return NPCMI_API_KEY;
         }
 
         // 旧バージョン互換: DBに保存されたキーがあればそれを使う（移行用）
-        $db_key = get_option( 'npc_sd_api_key', '' );
+        $db_key = get_option( 'npcmi_api_key', '' );
         if ( $db_key ) {
             return $db_key;
         }
@@ -403,7 +403,7 @@ class NPC_SD_Plugin {
      * - 設定済みなら true（n-pc.jp 既存サイトはこの分岐で従来通りAI機能が動く）
      *
      * 全てのAI機能（管理画面ボタン・AJAX・Cron・メール通知）はこの判定を経由する。
-     * 判定結果を変えたい場合は `npc_sd_ai_available` フィルタで上書き可能。
+     * 判定結果を変えたい場合は `npcmi_ai_available` フィルタで上書き可能。
      *
      * @return bool
      */
@@ -415,7 +415,7 @@ class NPC_SD_Plugin {
          * AI機能の有効/無効をフィルタで上書き可能にする
          * 例: 一時的に AI 機能を停止したい場合に false を返す
          */
-        return (bool) apply_filters( 'npc_sd_ai_available', $available );
+        return (bool) apply_filters( 'npcmi_ai_available', $available );
     }
 
     // =========================================
@@ -427,8 +427,8 @@ class NPC_SD_Plugin {
      * 非公開・管理画面非表示（自前UIで管理するため）
      */
     public function register_log_cpt() {
-        register_post_type( NPC_SD_CPT, array(
-            'label'           => __( 'Site Doctor Log', 'npc-site-doctor' ),
+        register_post_type( NPCMI_CPT, array(
+            'label'           => __( 'NPC Maintenance Inspector Log', 'npc-maintenance-inspector' ),
             'public'          => false,
             'show_ui'         => false,
             'show_in_menu'    => false,
@@ -451,12 +451,12 @@ class NPC_SD_Plugin {
     public function save_healthcheck_log( $results ) {
         $title = sprintf(
             /* translators: %s: timestamp like "2026-05-11 14:32" */
-            __( 'Diagnosis log %s', 'npc-site-doctor' ),
+            __( 'Diagnosis log %s', 'npc-maintenance-inspector' ),
             current_time( 'Y-m-d H:i' )
         );
 
         $post_id = wp_insert_post( array(
-            'post_type'   => NPC_SD_CPT,
+            'post_type'   => NPCMI_CPT,
             'post_status' => 'publish',
             'post_title'  => $title,
         ), true );
@@ -568,7 +568,7 @@ class NPC_SD_Plugin {
      */
     private function cleanup_old_logs() {
         $all = get_posts( array(
-            'post_type'      => NPC_SD_CPT,
+            'post_type'      => NPCMI_CPT,
             'post_status'    => 'publish',
             'posts_per_page' => -1,
             'orderby'        => 'date',
@@ -576,11 +576,11 @@ class NPC_SD_Plugin {
             'fields'         => 'ids',
         ) );
 
-        if ( count( $all ) <= NPC_SD_HISTORY_LIMIT ) {
+        if ( count( $all ) <= NPCMI_HISTORY_LIMIT ) {
             return;
         }
 
-        $to_delete = array_slice( $all, NPC_SD_HISTORY_LIMIT );
+        $to_delete = array_slice( $all, NPCMI_HISTORY_LIMIT );
         foreach ( $to_delete as $id ) {
             wp_delete_post( $id, true ); // 即時削除（ゴミ箱を経由しない）
         }
@@ -594,9 +594,9 @@ class NPC_SD_Plugin {
      */
     public function get_healthcheck_logs() {
         $posts = get_posts( array(
-            'post_type'      => NPC_SD_CPT,
+            'post_type'      => NPCMI_CPT,
             'post_status'    => 'publish',
-            'posts_per_page' => NPC_SD_HISTORY_LIMIT,
+            'posts_per_page' => NPCMI_HISTORY_LIMIT,
             'orderby'        => 'date',
             'order'          => 'DESC',
         ) );
@@ -627,34 +627,34 @@ class NPC_SD_Plugin {
      */
     private function maybe_migrate_legacy_option() {
         // 既にCPT投稿がある、または既に移行済みフラグがあればスキップ
-        if ( get_option( 'npc_sd_migrated_v04', false ) ) {
+        if ( get_option( 'npcmi_migrated_v04', false ) ) {
             return;
         }
 
         $existing = get_posts( array(
-            'post_type'      => NPC_SD_CPT,
+            'post_type'      => NPCMI_CPT,
             'posts_per_page' => 1,
             'fields'         => 'ids',
         ) );
         if ( ! empty( $existing ) ) {
-            update_option( 'npc_sd_migrated_v04', true );
+            update_option( 'npcmi_migrated_v04', true );
             return;
         }
 
-        $legacy_results = get_option( 'npc_sd_last_results', null );
+        $legacy_results = get_option( 'npcmi_last_results', null );
         if ( empty( $legacy_results ) ) {
-            update_option( 'npc_sd_migrated_v04', true );
+            update_option( 'npcmi_migrated_v04', true );
             return;
         }
 
         $post_id = $this->save_healthcheck_log( $legacy_results );
         if ( ! is_wp_error( $post_id ) ) {
-            $legacy_report = get_option( 'npc_sd_last_report', '' );
+            $legacy_report = get_option( 'npcmi_last_report', '' );
             if ( $legacy_report ) {
                 $this->attach_report_to_log( $post_id, $legacy_report );
             }
             // 投稿日時を last_run の時刻に寄せる（保持できる場合）
-            $last_run = get_option( 'npc_sd_last_run', '' );
+            $last_run = get_option( 'npcmi_last_run', '' );
             if ( $last_run ) {
                 wp_update_post( array(
                     'ID'            => $post_id,
@@ -664,7 +664,7 @@ class NPC_SD_Plugin {
             }
         }
 
-        update_option( 'npc_sd_migrated_v04', true );
+        update_option( 'npcmi_migrated_v04', true );
     }
 
     // =========================================
@@ -682,21 +682,21 @@ class NPC_SD_Plugin {
         }
 
         add_menu_page(
-            __( 'NPC Site Doctor', 'npc-site-doctor' ),
-            __( 'Site Doctor', 'npc-site-doctor' ),
+            __( 'NPC Maintenance Inspector', 'npc-maintenance-inspector' ),
+            __( 'NPC Inspector', 'npc-maintenance-inspector' ),
             'manage_options',
-            'npc-site-doctor',
+            'npc-maintenance-inspector',
             array( $this, 'render_dashboard' ),
             'dashicons-heart',
             80
         );
 
         add_submenu_page(
-            'npc-site-doctor',
-            __( 'Settings — NPC Site Doctor', 'npc-site-doctor' ),
-            __( 'Settings', 'npc-site-doctor' ),
+            'npc-maintenance-inspector',
+            __( 'Settings — NPC Maintenance Inspector', 'npc-maintenance-inspector' ),
+            __( 'Settings', 'npc-maintenance-inspector' ),
             'manage_options',
-            'npc-site-doctor-settings',
+            'npc-maintenance-inspector-settings',
             array( $this, 'render_settings' )
         );
     }
@@ -705,7 +705,7 @@ class NPC_SD_Plugin {
      * 管理画面用のCSS/JSを読み込む
      */
     public function enqueue_admin_assets( $hook ) {
-        if ( strpos( $hook, 'npc-site-doctor' ) === false ) {
+        if ( strpos( $hook, 'npc-maintenance-inspector' ) === false ) {
             return;
         }
 
@@ -715,37 +715,37 @@ class NPC_SD_Plugin {
         }
 
         wp_enqueue_style(
-            'npc-site-doctor-admin',
-            NPC_SD_URL . 'assets/css/admin.css',
+            'npc-maintenance-inspector-admin',
+            NPCMI_URL . 'assets/css/admin.css',
             array(),
-            NPC_SD_VERSION
+            NPCMI_VERSION
         );
 
         wp_enqueue_script(
-            'npc-site-doctor-admin',
-            NPC_SD_URL . 'assets/js/admin.js',
+            'npc-maintenance-inspector-admin',
+            NPCMI_URL . 'assets/js/admin.js',
             array( 'jquery', 'wp-i18n' ),
-            NPC_SD_VERSION,
+            NPCMI_VERSION,
             true
         );
 
         // i18n: JS の `__()` 呼び出しに翻訳ファイル(languages/*.json)を結び付ける
         wp_set_script_translations(
-            'npc-site-doctor-admin',
-            'npc-site-doctor',
-            NPC_SD_PATH . 'languages'
+            'npc-maintenance-inspector-admin',
+            'npc-maintenance-inspector',
+            NPCMI_PATH . 'languages'
         );
 
         // 診断履歴をJSに渡す（ダッシュボードHealthcheck画面でのみ）
         $history = array();
-        if ( strpos( $hook, 'npc-site-doctor' ) !== false && strpos( $hook, 'settings' ) === false ) {
+        if ( strpos( $hook, 'npc-maintenance-inspector' ) !== false && strpos( $hook, 'settings' ) === false ) {
             $this->maybe_migrate_legacy_option();
             $history = $this->get_healthcheck_logs();
         }
 
-        wp_localize_script( 'npc-site-doctor-admin', 'npcSiteDoctor', array(
+        wp_localize_script( 'npc-maintenance-inspector-admin', 'npcSiteDoctor', array(
             'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
-            'nonce'    => wp_create_nonce( 'npc_sd_nonce' ),
+            'nonce'    => wp_create_nonce( 'npcmi_nonce' ),
             'history'  => $history,
             'siteName' => get_bloginfo( 'name' ),
         ) );
@@ -756,14 +756,14 @@ class NPC_SD_Plugin {
      */
     public function render_dashboard() {
         if ( ! $this->is_allowed_user() ) {
-            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-site-doctor' ) );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-maintenance-inspector' ) );
         }
 
         // 初回アクセス時に旧optionデータをCPTに移行
         $this->maybe_migrate_legacy_option();
 
         $api_key = self::get_api_key();
-        include NPC_SD_PATH . 'templates/dashboard.php';
+        include NPCMI_PATH . 'templates/dashboard.php';
     }
 
     /**
@@ -772,10 +772,10 @@ class NPC_SD_Plugin {
      */
     public function render_settings() {
         if ( ! $this->is_allowed_user() ) {
-            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-site-doctor' ) );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'npc-maintenance-inspector' ) );
         }
 
-        include NPC_SD_PATH . 'templates/settings.php';
+        include NPCMI_PATH . 'templates/settings.php';
     }
 
     // =========================================
@@ -787,23 +787,23 @@ class NPC_SD_Plugin {
      * 新しいログ投稿を作成し、その投稿IDを「現在のログ」としてoptionに記録する
      */
     public function ajax_run_healthcheck() {
-        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
+        check_ajax_referer( 'npcmi_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-maintenance-inspector' ) );
         }
 
-        $checker = new NPC_SD_Checker();
+        $checker = new NPCMI_Checker();
         $results = $checker->run_all_checks();
 
         // 後方互換: optionにも最新分を保持
-        update_option( 'npc_sd_last_results', $results );
-        update_option( 'npc_sd_last_run', current_time( 'mysql' ) );
+        update_option( 'npcmi_last_results', $results );
+        update_option( 'npcmi_last_run', current_time( 'mysql' ) );
 
         // 履歴CPTに新しいログを作成
         $log_id = $this->save_healthcheck_log( $results );
         if ( ! is_wp_error( $log_id ) ) {
-            update_option( 'npc_sd_current_log_id', $log_id );
+            update_option( 'npcmi_current_log_id', $log_id );
         }
 
         wp_send_json_success( array(
@@ -818,24 +818,24 @@ class NPC_SD_Plugin {
      * 現在のログ投稿にレポートを紐付けて保存する
      */
     public function ajax_generate_report() {
-        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
+        check_ajax_referer( 'npcmi_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-maintenance-inspector' ) );
         }
 
         // AI機能が無効化されている（APIキー未設定）場合は早期エラー
         // フロント側で button が非表示でも、念のためサーバー側でも防御する
         if ( ! self::is_ai_available() ) {
-            wp_send_json_error( esc_html__( 'AI report feature is disabled. Define NPC_SD_API_KEY in wp-config.php to enable it.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'AI report feature is disabled. Define NPCMI_API_KEY in wp-config.php to enable it.', 'npc-maintenance-inspector' ) );
         }
 
-        $results = get_option( 'npc_sd_last_results', array() );
+        $results = get_option( 'npcmi_last_results', array() );
         if ( empty( $results ) ) {
-            wp_send_json_error( esc_html__( 'Please run a diagnosis first.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'Please run a diagnosis first.', 'npc-maintenance-inspector' ) );
         }
 
-        $reporter = new NPC_SD_AI_Reporter();
+        $reporter = new NPCMI_AI_Reporter();
         $report   = $reporter->generate( $results );
 
         if ( is_wp_error( $report ) ) {
@@ -843,10 +843,10 @@ class NPC_SD_Plugin {
         }
 
         // 後方互換
-        update_option( 'npc_sd_last_report', $report );
+        update_option( 'npcmi_last_report', $report );
 
         // 現在のログ投稿にレポートを紐付け
-        $log_id = (int) get_option( 'npc_sd_current_log_id', 0 );
+        $log_id = (int) get_option( 'npcmi_current_log_id', 0 );
         if ( $log_id && get_post_status( $log_id ) === 'publish' ) {
             $this->attach_report_to_log( $log_id, $report );
         }
@@ -858,70 +858,97 @@ class NPC_SD_Plugin {
     }
 
     /**
-     * AJAX: debug.logをクリア（truncate）
-     * - nonce検証 + 許可ユーザー + manage_options で三重チェック
-     * - file_put_contents('') でファイル自体は残す（権限・所有者を維持）
+     * AJAX: debug.log のバックアップ作成
+     * - debug.log を uploads/npc-maintenance-inspector/backups/ にコピーして保存
+     * - debug.log 自体は書き換えない（WP本体ファイルに触らない）
+     * - クリアしたい場合はFTPで手動操作するよう案内
      */
-    public function ajax_clear_error_log() {
-        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
+    public function ajax_backup_error_log() {
+        check_ajax_referer( 'npcmi_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-maintenance-inspector' ) );
         }
 
-        // 念のため capability も確認（二重防御）
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( esc_html__( 'Administrator permission is required.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'Administrator permission is required.', 'npc-maintenance-inspector' ) );
         }
 
-        $log_file = WP_CONTENT_DIR . '/debug.log';
+        $checker  = new NPCMI_Checker();
+        $log_file = $checker->get_debug_log_path();
 
-        if ( ! file_exists( $log_file ) ) {
-            wp_send_json_error( esc_html__( 'debug.log does not exist.', 'npc-site-doctor' ) );
+        if ( ! $log_file || ! file_exists( $log_file ) ) {
+            wp_send_json_error( esc_html__( 'debug.log does not exist (WP_DEBUG_LOG may be disabled).', 'npc-maintenance-inspector' ) );
         }
 
-        if ( ! is_writable( $log_file ) ) {
-            wp_send_json_error( esc_html__( 'debug.log is not writable. Please check the file permissions via FTP.', 'npc-site-doctor' ) );
+        if ( ! is_readable( $log_file ) ) {
+            wp_send_json_error( esc_html__( 'debug.log is not readable. Please check the file permissions via FTP.', 'npc-maintenance-inspector' ) );
         }
 
-        $before_size = filesize( $log_file );
-
-        // truncate: 削除ではなく中身だけ空にする（所有者・パーミッションを維持）
-        $result = file_put_contents( $log_file, '' );
-
-        if ( $result === false ) {
-            wp_send_json_error( esc_html__( 'Failed to clear debug.log.', 'npc-site-doctor' ) );
+        // バックアップ保存先ディレクトリ
+        $upload_info = wp_upload_dir();
+        if ( empty( $upload_info['basedir'] ) ) {
+            wp_send_json_error( esc_html__( 'Could not determine the uploads directory.', 'npc-maintenance-inspector' ) );
         }
+
+        $backup_dir = trailingslashit( $upload_info['basedir'] ) . 'npc-maintenance-inspector/backups';
+        if ( ! wp_mkdir_p( $backup_dir ) ) {
+            wp_send_json_error( esc_html__( 'Could not create the backup directory under uploads.', 'npc-maintenance-inspector' ) );
+        }
+
+        // .htaccess で直接アクセス禁止（バックアップ初回作成時のみ）
+        $htaccess = $backup_dir . '/.htaccess';
+        if ( ! file_exists( $htaccess ) ) {
+            file_put_contents( $htaccess, "Deny from all\n" );
+        }
+
+        // タイムスタンプ付きファイル名
+        $timestamp   = gmdate( 'Y-m-d-His' );
+        $backup_name = 'debug-' . $timestamp . '.log';
+        $backup_path = $backup_dir . '/' . $backup_name;
+
+        // コピー実行（読み込み→書き込みで権限を新規ファイルとして付与）
+        $log_size = filesize( $log_file );
+        if ( ! copy( $log_file, $backup_path ) ) {
+            wp_send_json_error( esc_html__( 'Failed to copy debug.log to the backup directory.', 'npc-maintenance-inspector' ) );
+        }
+
+        // ダウンロードURL生成
+        $backup_url = trailingslashit( $upload_info['baseurl'] ) . 'npc-maintenance-inspector/backups/' . $backup_name;
 
         wp_send_json_success( array(
-            'bytes_cleared'    => (int) $before_size,
-            'formatted_size'   => size_format( $before_size, 2 ),
-            'message'          => sprintf(
+            'backup_path'    => $backup_path,
+            'backup_url'     => $backup_url,
+            'backup_name'    => $backup_name,
+            'bytes_backed'   => (int) $log_size,
+            'formatted_size' => size_format( $log_size, 2 ),
+            'message'        => sprintf(
                 /* translators: %s: byte size like "1.2 KB" */
-                __( 'Cleared %s.', 'npc-site-doctor' ),
-                size_format( $before_size, 2 )
+                __( 'Backup saved (%s).', 'npc-maintenance-inspector' ),
+                size_format( $log_size, 2 )
             ),
+            'ftp_note'       => __( 'To clear debug.log itself, please use FTP/SFTP to empty or rename the file at wp-content/debug.log. This plugin intentionally does not modify WordPress core files.', 'npc-maintenance-inspector' ),
         ) );
     }
 
     /**
      * AJAX: 通知メールのテスト送信
-     * ダミーのcritical issueでNPC_SD_Notifierを呼び、メール到達確認に使う
+     * ダミーのcritical issueでNPCMI_Notifierを呼び、メール到達確認に使う
      */
     public function ajax_test_notification() {
-        check_ajax_referer( 'npc_sd_nonce', 'nonce' );
+        check_ajax_referer( 'npcmi_nonce', 'nonce' );
 
         if ( ! $this->is_allowed_user() ) {
-            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'You do not have permission to perform this action.', 'npc-maintenance-inspector' ) );
         }
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( esc_html__( 'Administrator permission is required.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'Administrator permission is required.', 'npc-maintenance-inspector' ) );
         }
 
         $email = $this->get_notify_email();
         if ( empty( $email ) ) {
-            wp_send_json_error( esc_html__( 'Notification email address is not configured.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'Notification email address is not configured.', 'npc-maintenance-inspector' ) );
         }
 
         // ダミーの診断結果とissueを作成
@@ -935,22 +962,22 @@ class NPC_SD_Plugin {
         $dummy_issues = array(
             array(
                 'key'    => 'test_notification',
-                'label'  => __( 'This is a test notification (not an actual issue).', 'npc-site-doctor' ),
-                'detail' => __( "This is a test email used to confirm that the automated notification feature works correctly.\nIn production, this email is sent when issues like the following are detected:\n  - File tampering / suspicious code\n  - Suspicious PHP files in the uploads directory\n  - SSL certificate expiring soon\n  - Critical Site Health issues", 'npc-site-doctor' ),
+                'label'  => __( 'This is a test notification (not an actual issue).', 'npc-maintenance-inspector' ),
+                'detail' => __( "This is a test email used to confirm that the automated notification feature works correctly.\nIn production, this email is sent when issues like the following are detected:\n  - File tampering / suspicious code\n  - Suspicious PHP files in the uploads directory\n  - SSL certificate expiring soon\n  - Critical Site Health issues", 'npc-maintenance-inspector' ),
             ),
         );
 
-        $sent = NPC_SD_Notifier::send( $email, $dummy_results, $dummy_issues, '' );
+        $sent = NPCMI_Notifier::send( $email, $dummy_results, $dummy_issues, '' );
 
         if ( ! $sent ) {
-            wp_send_json_error( esc_html__( 'Failed to send email. Please check the WordPress mail configuration.', 'npc-site-doctor' ) );
+            wp_send_json_error( esc_html__( 'Failed to send email. Please check the WordPress mail configuration.', 'npc-maintenance-inspector' ) );
         }
 
         wp_send_json_success( array(
             'email'   => $email,
             'message' => sprintf(
                 /* translators: %s: destination email address */
-                __( 'A test email was sent to %s. Please verify that it was received.', 'npc-site-doctor' ),
+                __( 'A test email was sent to %s. Please verify that it was received.', 'npc-maintenance-inspector' ),
                 $email
             ),
         ) );
@@ -958,4 +985,4 @@ class NPC_SD_Plugin {
 }
 
 // プラグイン起動
-NPC_SD_Plugin::get_instance();
+NPCMI_Plugin::get_instance();

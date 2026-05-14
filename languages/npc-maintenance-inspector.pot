@@ -1,14 +1,10 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
+# Copyright (C) 2026 npc
+# This file is distributed under the GPL v2 or later license.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-11 14:27+0900\n"
+"Project-Id-Version: NPC Maintenance Inspector 1.0.0\n"
+"Report-Msgid-Bugs-To: support@n-pc.jp\n"
+"POT-Creation-Date: 2026-05-13 21:00+0900\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,107 +12,121 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Domain: npc-maintenance-inspector\n"
 
-#: npc-site-doctor.php:175
+#: npc-maintenance-inspector.php:175
 msgid "Once Weekly"
 msgstr ""
 
-#: npc-site-doctor.php:181
+#: npc-maintenance-inspector.php:181
 msgid "Once Monthly"
 msgstr ""
 
-#: npc-site-doctor.php:272 npc-site-doctor.php:759 npc-site-doctor.php:775
+#: npc-maintenance-inspector.php:272 npc-maintenance-inspector.php:759
+#: npc-maintenance-inspector.php:775
 msgid "You do not have permission to access this page."
 msgstr ""
 
-#: npc-site-doctor.php:277
+#: npc-maintenance-inspector.php:277
 msgid "You are not the authorized user for this plugin."
 msgstr ""
 
-#. translators: %s: the original site URL the plugin was bound to
-#: npc-site-doctor.php:371
+#: npc-maintenance-inspector.php:371
 #, php-format
 msgid "This plugin was set up for %s."
 msgstr ""
 
-#: npc-site-doctor.php:375
+#: npc-maintenance-inspector.php:375
 msgid ""
 "It cannot be used on a different site. To re-setup, delete the "
-"npc_sd_bound_site_url option from the database and re-activate the plugin."
+"npcmi_bound_site_url option from the database and re-activate the plugin."
 msgstr ""
 
-#: npc-site-doctor.php:431
-msgid "Site Doctor Log"
+#: npc-maintenance-inspector.php:431
+msgid "NPC Maintenance Inspector Log"
 msgstr ""
 
-#. translators: %s: timestamp like "2026-05-11 14:32"
-#: npc-site-doctor.php:454
+#: npc-maintenance-inspector.php:454
 #, php-format
 msgid "Diagnosis log %s"
 msgstr ""
 
-#: npc-site-doctor.php:685 templates/dashboard.php:17
-msgid "NPC Site Doctor"
+#: npc-maintenance-inspector.php:685 templates/dashboard.php:17
+msgid "NPC Maintenance Inspector"
 msgstr ""
 
-#: npc-site-doctor.php:686
-msgid "Site Doctor"
+#: npc-maintenance-inspector.php:686
+msgid "NPC Inspector"
 msgstr ""
 
-#: npc-site-doctor.php:696
-msgid "Settings — NPC Site Doctor"
+#: npc-maintenance-inspector.php:696
+msgid "Settings — NPC Maintenance Inspector"
 msgstr ""
 
-#: npc-site-doctor.php:697
+#: npc-maintenance-inspector.php:697
 msgid "Settings"
 msgstr ""
 
-#: npc-site-doctor.php:793 npc-site-doctor.php:824 npc-site-doctor.php:869
-#: npc-site-doctor.php:915
+#: npc-maintenance-inspector.php:793 npc-maintenance-inspector.php:824
+#: npc-maintenance-inspector.php:870 npc-maintenance-inspector.php:942
 msgid "You do not have permission to perform this action."
 msgstr ""
 
-#: npc-site-doctor.php:830 includes/class-ai-reporter.php:31
+#: npc-maintenance-inspector.php:830 includes/class-ai-reporter.php:31
 msgid ""
-"AI report feature is disabled. Define NPC_SD_API_KEY in wp-config.php to "
+"AI report feature is disabled. Define NPCMI_API_KEY in wp-config.php to "
 "enable it."
 msgstr ""
 
-#: npc-site-doctor.php:835
+#: npc-maintenance-inspector.php:835
 msgid "Please run a diagnosis first."
 msgstr ""
 
-#: npc-site-doctor.php:874 npc-site-doctor.php:919
+#: npc-maintenance-inspector.php:874 npc-maintenance-inspector.php:946
 msgid "Administrator permission is required."
 msgstr ""
 
-#: npc-site-doctor.php:880 assets/js/admin.js:252
-msgid "debug.log does not exist."
+#: npc-maintenance-inspector.php:881
+msgid "debug.log does not exist (WP_DEBUG_LOG may be disabled)."
 msgstr ""
 
-#: npc-site-doctor.php:884
-msgid "debug.log is not writable. Please check the file permissions via FTP."
+#: npc-maintenance-inspector.php:885
+msgid "debug.log is not readable. Please check the file permissions via FTP."
 msgstr ""
 
-#: npc-site-doctor.php:893
-msgid "Failed to clear debug.log."
+#: npc-maintenance-inspector.php:891
+msgid "Could not determine the uploads directory."
 msgstr ""
 
-#. translators: %s: byte size like "1.2 KB"
-#: npc-site-doctor.php:901
+#: npc-maintenance-inspector.php:896
+msgid "Could not create the backup directory under uploads."
+msgstr ""
+
+#: npc-maintenance-inspector.php:913
+msgid "Failed to copy debug.log to the backup directory."
+msgstr ""
+
+#: npc-maintenance-inspector.php:927
 #, php-format
-msgid "Cleared %s."
+msgid "Backup saved (%s)."
 msgstr ""
 
-#: npc-site-doctor.php:924
+#: npc-maintenance-inspector.php:930
+msgid ""
+"To clear debug.log itself, please use FTP/SFTP to empty or rename the file "
+"at wp-content/debug.log. This plugin intentionally does not modify WordPress "
+"core files."
+msgstr ""
+
+#: npc-maintenance-inspector.php:951
 msgid "Notification email address is not configured."
 msgstr ""
 
-#: npc-site-doctor.php:938
+#: npc-maintenance-inspector.php:965
 msgid "This is a test notification (not an actual issue)."
 msgstr ""
 
-#: npc-site-doctor.php:939
+#: npc-maintenance-inspector.php:966
 msgid ""
 "This is a test email used to confirm that the automated notification feature "
 "works correctly.\n"
@@ -128,23 +138,20 @@ msgid ""
 "  - Critical Site Health issues"
 msgstr ""
 
-#: npc-site-doctor.php:946
+#: npc-maintenance-inspector.php:973
 msgid "Failed to send email. Please check the WordPress mail configuration."
 msgstr ""
 
-#. translators: %s: destination email address
-#: npc-site-doctor.php:953
+#: npc-maintenance-inspector.php:980
 #, php-format
 msgid "A test email was sent to %s. Please verify that it was received."
 msgstr ""
 
-#. translators: %s: error message from wp_remote_post
 #: includes/class-ai-reporter.php:66
 #, php-format
 msgid "Failed to connect to the Claude API: %s"
 msgstr ""
 
-#. translators: %d: HTTP status code
 #: includes/class-ai-reporter.php:78
 #, php-format
 msgid "API error (HTTP %d)"
@@ -155,7 +162,7 @@ msgid "The AI returned an empty response."
 msgstr ""
 
 #: includes/class-checker.php:99 includes/class-checker.php:100
-#: includes/class-checker.php:734
+#: includes/class-checker.php:736
 msgid "unknown"
 msgstr ""
 
@@ -243,17 +250,16 @@ msgid ""
 "Nested variable function call — dynamic code execution obfuscation pattern."
 msgstr ""
 
-#: includes/class-checker.php:676
+#: includes/class-checker.php:678
 msgid "Site is not using HTTPS."
 msgstr ""
 
-#. translators: %s: SSL error message from stream_socket_client
-#: includes/class-checker.php:704
+#: includes/class-checker.php:706
 #, php-format
 msgid "SSL connection failed: %s"
 msgstr ""
 
-#: includes/class-checker.php:717
+#: includes/class-checker.php:719
 msgid "Failed to parse certificate."
 msgstr ""
 
@@ -265,7 +271,6 @@ msgstr ""
 msgid "Suspicious PHP files in uploads directory"
 msgstr ""
 
-#. translators: 1: days remaining until expiry, 2: expiry date in YYYY-MM-DD
 #: includes/class-notifier.php:55
 #, php-format
 msgid "%1$d days remaining (expires: %2$s)"
@@ -275,19 +280,16 @@ msgstr ""
 msgid "SSL certificate is expiring soon"
 msgstr ""
 
-#. translators: %d: number of critical Site Health issues
 #: includes/class-notifier.php:78
 #, php-format
 msgid "Site Health critical issues: %d"
 msgstr ""
 
-#. translators: 1: site name, 2: number of critical issues
 #: includes/class-notifier.php:109
 #, php-format
-msgid "[NPC Site Doctor] %1$s detected %2$d critical issue(s)"
+msgid "[NPC Maintenance Inspector] %1$s detected %2$d critical issue(s)"
 msgstr ""
 
-#. translators: 1: site name, 2: site URL
 #: includes/class-notifier.php:117
 #, php-format
 msgid ""
@@ -311,13 +313,14 @@ msgid "AI diagnostic report"
 msgstr ""
 
 #: includes/class-notifier.php:150
-msgid "This email was sent by the NPC Site Doctor automated health-check."
+msgid ""
+"This email was sent by the NPC Maintenance Inspector automated health-check."
 msgstr ""
 
 #: includes/class-notifier.php:151
 msgid ""
-"To stop these notifications, go to NPC Site Doctor > Settings and disable "
-"automatic diagnostics."
+"To stop these notifications, go to NPC Maintenance Inspector > Settings and "
+"disable automatic diagnostics."
 msgstr ""
 
 #: templates/dashboard.php:28
@@ -328,7 +331,6 @@ msgstr ""
 msgid "To enable it, add the following to wp-config.php:"
 msgstr ""
 
-#. translators: 1: Anthropic API key link, 2: npc WP maintenance link
 #: templates/dashboard.php:36
 #, php-format
 msgid ""
@@ -372,7 +374,6 @@ msgstr ""
 msgid "Diagnosis History"
 msgstr ""
 
-#. translators: %d: number of history entries kept
 #: templates/dashboard.php:90
 #, php-format
 msgid ""
@@ -404,7 +405,7 @@ msgid "Settings saved."
 msgstr ""
 
 #: templates/settings.php:44
-msgid "NPC Site Doctor — Settings"
+msgid "NPC Maintenance Inspector — Settings"
 msgstr ""
 
 #: templates/settings.php:48
@@ -435,7 +436,6 @@ msgstr ""
 msgid "Current user"
 msgstr ""
 
-#. translators: %d: user ID
 #: templates/settings.php:75
 #, php-format
 msgid "(ID: %d)"
@@ -445,7 +445,6 @@ msgstr ""
 msgid "AI Report Feature (optional)"
 msgstr ""
 
-#. translators: %s: bold "Enabled" word wrapped in <strong>
 #: templates/settings.php:95
 #, php-format
 msgid "The AI report feature is %s."
@@ -480,13 +479,11 @@ msgstr ""
 msgid "Open wp-config.php via FTP or a file manager."
 msgstr ""
 
-#. translators: %s: NPC_SD_API_KEY constant name in <code>
 #: templates/settings.php:117
 #, php-format
 msgid "Replace the value of %s with the new key."
 msgstr ""
 
-#. translators: %s: bold "Disabled" word wrapped in <strong>
 #: templates/settings.php:131
 #, php-format
 msgid "The AI report feature is %s. Only diagnostics are active."
@@ -511,7 +508,6 @@ msgstr ""
 msgid "A. Bring your own API key"
 msgstr ""
 
-#. translators: %s: Anthropic Console link
 #: templates/settings.php:150
 #, php-format
 msgid ""
@@ -522,7 +518,6 @@ msgstr ""
 msgid "Anthropic Console"
 msgstr ""
 
-#. translators: %s: code marker shown in wp-config.php
 #: templates/settings.php:160
 #, php-format
 msgid "Add the following line above %s:"
@@ -532,7 +527,6 @@ msgstr ""
 msgid "B. Use the npc maintenance plan"
 msgstr ""
 
-#. translators: %s: link to npc WP maintenance page
 #: templates/settings.php:174
 #, php-format
 msgid ""
@@ -576,7 +570,6 @@ msgstr ""
 msgid "Notification email"
 msgstr ""
 
-#. translators: %s: authorized user's email
 #: templates/settings.php:230
 #, php-format
 msgid "If left blank, notifications are sent to the authorized user (%s)."
@@ -610,7 +603,6 @@ msgstr ""
 msgid "Next scheduled run"
 msgstr ""
 
-#. translators: %s: timestamp of last notification sent
 #: templates/settings.php:258
 #, php-format
 msgid "Last notification sent: %s"
@@ -717,30 +709,22 @@ msgid "Sending..."
 msgstr ""
 
 #: assets/js/admin.js:156 assets/js/admin.js:258
-msgid "Clear Log"
+msgid "Backup Log"
 msgstr ""
 
 #: assets/js/admin.js:158
 msgid ""
-"Are you sure you want to clear the contents of debug.log?\n"
-"(The file itself stays in place and permissions are preserved.)"
+"Save a copy of debug.log to wp-content/uploads/npc-maintenance-inspector/"
+"backups/?\n"
+"(The original debug.log is not modified.)"
 msgstr ""
 
 #: assets/js/admin.js:162
-msgid "Clearing..."
+msgid "Backing up..."
 msgstr ""
 
-#: assets/js/admin.js:175
-msgid "Size: 0 B"
-msgstr ""
-
-#: assets/js/admin.js:176
-msgid "Errors: 0"
-msgstr ""
-
-#: assets/js/admin.js:184 assets/js/admin.js:379 assets/js/admin.js:456
-#: assets/js/admin.js:505 assets/js/admin.js:584 assets/js/admin.js:723
-msgid "OK"
+#: assets/js/admin.js:179 assets/js/admin.js:587
+msgid "Download"
 msgstr ""
 
 #: assets/js/admin.js:188
@@ -815,6 +799,10 @@ msgstr ""
 #: assets/js/admin.js:245
 #, javascript-format
 msgid "Max upload: %s"
+msgstr ""
+
+#: assets/js/admin.js:252
+msgid "debug.log does not exist."
 msgstr ""
 
 #: assets/js/admin.js:254
@@ -927,6 +915,11 @@ msgstr ""
 msgid "Warning"
 msgstr ""
 
+#: assets/js/admin.js:379 assets/js/admin.js:456 assets/js/admin.js:505
+#: assets/js/admin.js:584 assets/js/admin.js:723
+msgid "OK"
+msgstr ""
+
 #: assets/js/admin.js:476
 msgid "Action Steps"
 msgstr ""
@@ -938,10 +931,6 @@ msgstr ""
 #: assets/js/admin.js:573
 #, javascript-format
 msgid "Diagnosis from %s"
-msgstr ""
-
-#: assets/js/admin.js:587
-msgid "Download"
 msgstr ""
 
 #: assets/js/admin.js:595

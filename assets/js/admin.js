@@ -1,5 +1,5 @@
 /**
- * NPC Site Doctor — admin JS
+ * NPC Maintenance Inspector — admin JS
  */
 (function($) {
     'use strict';
@@ -35,7 +35,7 @@
         var $btn = $(this);
         $btn.prop('disabled', true);
 
-        showLoading(__( 'Running diagnosis... (Site Health takes a moment)', 'npc-site-doctor' ));
+        showLoading(__( 'Running diagnosis... (Site Health takes a moment)', 'npc-maintenance-inspector' ));
         $('#npc-results').hide();
         $('#npc-report').hide();
         $('#npc-download-report').hide();
@@ -44,7 +44,7 @@
             url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_sd_run_healthcheck',
+                action: 'npcmi_run_healthcheck',
                 nonce: npcSiteDoctor.nonce
             },
             success: function(response) {
@@ -55,16 +55,16 @@
                     currentLog.results = response.data.results;
                     currentLog.report  = '';
                     currentLog.date    = response.data.date;
-                    $('#npc-report-title').text(__( 'AI Report', 'npc-site-doctor' ));
+                    $('#npc-report-title').text(__( 'AI Report', 'npc-maintenance-inspector' ));
                     renderResults(currentLog.results, currentLog.date);
                 } else {
-                    alert(__( 'Diagnosis error: ', 'npc-site-doctor' ) + response.data);
+                    alert(__( 'Diagnosis error: ', 'npc-maintenance-inspector' ) + response.data);
                 }
             },
             error: function() {
                 hideLoading();
                 $btn.prop('disabled', false);
-                alert(__( 'A communication error occurred.', 'npc-site-doctor' ));
+                alert(__( 'A communication error occurred.', 'npc-maintenance-inspector' ));
             }
         });
     });
@@ -76,14 +76,14 @@
         var $btn = $(this);
         $btn.prop('disabled', true);
 
-        showLoading(__( 'Generating AI report... (takes about 30 seconds)', 'npc-site-doctor' ));
+        showLoading(__( 'Generating AI report... (takes about 30 seconds)', 'npc-maintenance-inspector' ));
         $('#npc-report').hide();
 
         $.ajax({
             url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_sd_generate_report',
+                action: 'npcmi_generate_report',
                 nonce: npcSiteDoctor.nonce
             },
             timeout: 90000,
@@ -95,13 +95,13 @@
                     currentLog.report = response.data.report;
                     renderReport(currentLog.report);
                 } else {
-                    alert(__( 'Report generation error: ', 'npc-site-doctor' ) + response.data);
+                    alert(__( 'Report generation error: ', 'npc-maintenance-inspector' ) + response.data);
                 }
             },
             error: function() {
                 hideLoading();
                 $btn.prop('disabled', false);
-                alert(__( 'A communication error occurred (possibly a timeout).', 'npc-site-doctor' ));
+                alert(__( 'A communication error occurred (possibly a timeout).', 'npc-maintenance-inspector' ));
             }
         });
     });
@@ -119,16 +119,16 @@
     $('#npc-test-notification').on('click', function() {
         var $btn = $(this);
         var $result = $('#npc-test-notification-result');
-        var btnLabel = __( 'Send Test Email', 'npc-site-doctor' );
+        var btnLabel = __( 'Send Test Email', 'npc-maintenance-inspector' );
 
-        $btn.prop('disabled', true).text(__( 'Sending...', 'npc-site-doctor' ));
+        $btn.prop('disabled', true).text(__( 'Sending...', 'npc-maintenance-inspector' ));
         $result.text('').css('color', '');
 
         $.ajax({
             url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_sd_test_notification',
+                action: 'npcmi_test_notification',
                 nonce:  npcSiteDoctor.nonce
             },
             success: function(response) {
@@ -141,57 +141,57 @@
             },
             error: function() {
                 $btn.prop('disabled', false).text(btnLabel);
-                $result.text('✗ ' + __( 'A communication error occurred.', 'npc-site-doctor' )).css('color', '#b91c1c');
+                $result.text('✗ ' + __( 'A communication error occurred.', 'npc-maintenance-inspector' )).css('color', '#b91c1c');
             }
         });
     });
 
     /**
-     * In-card action buttons (e.g. clear debug.log).
+     * In-card action buttons (e.g. backup debug.log).
      * Cards are rendered dynamically, so we delegate.
      */
-    $('#npc-results-grid').on('click', '.npc-card__action[data-action="clear-log"]', function() {
+    $('#npc-results-grid').on('click', '.npc-card__action[data-action="backup-log"]', function() {
         var $btn = $(this);
         var $card = $btn.closest('.npc-card');
-        var clearLabel = __( 'Clear Log', 'npc-site-doctor' );
+        var backupLabel = __( 'Backup Log', 'npc-maintenance-inspector' );
 
-        if (!confirm(__( 'Are you sure you want to clear the contents of debug.log?\n(The file itself stays in place and permissions are preserved.)', 'npc-site-doctor' ))) {
+        if (!confirm(__( 'Save a copy of debug.log to wp-content/uploads/npc-maintenance-inspector/backups/?\n(The original debug.log is not modified.)', 'npc-maintenance-inspector' ))) {
             return;
         }
 
-        $btn.prop('disabled', true).text(__( 'Clearing...', 'npc-site-doctor' ));
+        $btn.prop('disabled', true).text(__( 'Backing up...', 'npc-maintenance-inspector' ));
 
         $.ajax({
             url: npcSiteDoctor.ajaxUrl,
             type: 'POST',
             data: {
-                action: 'npc_sd_clear_error_log',
+                action: 'npcmi_backup_error_log',
                 nonce:  npcSiteDoctor.nonce
             },
             success: function(response) {
                 if (response.success) {
-                    // Update the card: size 0 / 0 errors / success message.
-                    $card.find('ul').html(
-                        '<li>' + escapeHtml(__( 'Size: 0 B', 'npc-site-doctor' )) + '</li>'
-                        + '<li>' + escapeHtml(__( 'Errors: 0', 'npc-site-doctor' )) + '</li>'
-                        + '<li class="npc-card__notice">' + escapeHtml(response.data.message) + '</li>'
-                    );
-                    // Switch the badge to "OK".
-                    $card.removeClass('npc-card--warning npc-card--critical').addClass('npc-card--ok');
-                    $card.find('.npc-badge')
-                        .removeClass('npc-badge--warning npc-badge--critical')
-                        .addClass('npc-badge--ok')
-                        .text(__( 'OK', 'npc-site-doctor' ));
-                    // Hide action buttons.
-                    $card.find('.npc-card__actions').hide();
+                    var d = response.data;
+                    // Append backup notice to the card.
+                    var noticeHtml =
+                        '<li class="npc-card__notice">'
+                        + escapeHtml(d.message)
+                        + ' <a href="' + escapeHtml(d.backup_url) + '" download>'
+                        + escapeHtml(__( 'Download', 'npc-maintenance-inspector' ))
+                        + '</a>'
+                        + '</li>'
+                        + '<li class="npc-card__notice npc-card__notice--ftp">'
+                        + escapeHtml(d.ftp_note)
+                        + '</li>';
+                    $card.find('ul').append(noticeHtml);
+                    $btn.prop('disabled', false).text(backupLabel);
                 } else {
-                    alert(__( 'Error: ', 'npc-site-doctor' ) + response.data);
-                    $btn.prop('disabled', false).text(clearLabel);
+                    alert(__( 'Error: ', 'npc-maintenance-inspector' ) + response.data);
+                    $btn.prop('disabled', false).text(backupLabel);
                 }
             },
             error: function() {
-                alert(__( 'A communication error occurred.', 'npc-site-doctor' ));
-                $btn.prop('disabled', false).text(clearLabel);
+                alert(__( 'A communication error occurred.', 'npc-maintenance-inspector' ));
+                $btn.prop('disabled', false).text(backupLabel);
             }
         });
     });
@@ -210,103 +210,103 @@
         $grid.empty();
 
         // WP Core
-        $grid.append(createCard(__( 'WordPress Core', 'npc-site-doctor' ), data.core_updates.status, [
-            sprintf(__( 'Current: %s', 'npc-site-doctor' ), data.core_updates.current_version),
+        $grid.append(createCard(__( 'WordPress Core', 'npc-maintenance-inspector' ), data.core_updates.status, [
+            sprintf(__( 'Current: %s', 'npc-maintenance-inspector' ), data.core_updates.current_version),
             data.core_updates.status === 'ok'
-                ? __( 'Up to date.', 'npc-site-doctor' )
-                : sprintf(__( 'Update available: %s', 'npc-site-doctor' ), data.core_updates.latest_version)
+                ? __( 'Up to date.', 'npc-maintenance-inspector' )
+                : sprintf(__( 'Update available: %s', 'npc-maintenance-inspector' ), data.core_updates.latest_version)
         ]));
 
         // Plugins
         var pluginItems = [
-            sprintf(__( 'Total: %1$d (active: %2$d)', 'npc-site-doctor' ),
+            sprintf(__( 'Total: %1$d (active: %2$d)', 'npc-maintenance-inspector' ),
                 data.plugin_updates.total_plugins, data.plugin_updates.active_plugins),
-            sprintf(__( 'Updates needed: %d', 'npc-site-doctor' ), data.plugin_updates.updates_count)
+            sprintf(__( 'Updates needed: %d', 'npc-maintenance-inspector' ), data.plugin_updates.updates_count)
         ];
         data.plugin_updates.updates_needed.forEach(function(p) {
             pluginItems.push(p.name + ': ' + p.current_version + ' → ' + p.new_version);
         });
-        $grid.append(createCard(__( 'Plugins', 'npc-site-doctor' ), data.plugin_updates.status, pluginItems));
+        $grid.append(createCard(__( 'Plugins', 'npc-maintenance-inspector' ), data.plugin_updates.status, pluginItems));
 
         // Site Health
-        $grid.append(createCard(__( 'Site Health', 'npc-site-doctor' ),
+        $grid.append(createCard(__( 'Site Health', 'npc-maintenance-inspector' ),
             data.site_health.critical_count > 0 ? 'critical' : (data.site_health.recommended_count > 0 ? 'warning' : 'ok'),
             [
-                sprintf(__( 'Critical: %d', 'npc-site-doctor' ), data.site_health.critical_count),
-                sprintf(__( 'Recommended: %d', 'npc-site-doctor' ), data.site_health.recommended_count),
-                sprintf(__( 'Good: %d', 'npc-site-doctor' ), data.site_health.good_count)
+                sprintf(__( 'Critical: %d', 'npc-maintenance-inspector' ), data.site_health.critical_count),
+                sprintf(__( 'Recommended: %d', 'npc-maintenance-inspector' ), data.site_health.recommended_count),
+                sprintf(__( 'Good: %d', 'npc-maintenance-inspector' ), data.site_health.good_count)
             ]
         ));
 
         // PHP / server environment
-        $grid.append(createCard(__( 'Server Environment', 'npc-site-doctor' ), data.php_version.status, [
-            sprintf(__( 'PHP: %s', 'npc-site-doctor' ), data.php_version.php_version),
-            sprintf(__( 'Memory: %s', 'npc-site-doctor' ), data.php_version.max_memory),
-            sprintf(__( 'Max upload: %s', 'npc-site-doctor' ), data.php_version.max_upload)
+        $grid.append(createCard(__( 'Server Environment', 'npc-maintenance-inspector' ), data.php_version.status, [
+            sprintf(__( 'PHP: %s', 'npc-maintenance-inspector' ), data.php_version.php_version),
+            sprintf(__( 'Memory: %s', 'npc-maintenance-inspector' ), data.php_version.max_memory),
+            sprintf(__( 'Max upload: %s', 'npc-maintenance-inspector' ), data.php_version.max_upload)
         ]));
 
         // Error log
         var logItems = [];
         var logActions = [];
         if (!data.error_log.exists) {
-            logItems.push(__( 'debug.log does not exist.', 'npc-site-doctor' ));
+            logItems.push(__( 'debug.log does not exist.', 'npc-maintenance-inspector' ));
         } else {
-            logItems.push(sprintf(__( 'Size: %s', 'npc-site-doctor' ), data.error_log.file_size));
-            logItems.push(sprintf(__( 'Errors: %d', 'npc-site-doctor' ), data.error_log.error_count));
+            logItems.push(sprintf(__( 'Size: %s', 'npc-maintenance-inspector' ), data.error_log.file_size));
+            logItems.push(sprintf(__( 'Errors: %d', 'npc-maintenance-inspector' ), data.error_log.error_count));
             if (parseFloat(data.error_log.file_size) > 0 || data.error_log.error_count > 0) {
                 logActions.push({
-                    label:   __( 'Clear Log', 'npc-site-doctor' ),
-                    action:  'clear-log',
-                    variant: 'danger'
+                    label:   __( 'Backup Log', 'npc-maintenance-inspector' ),
+                    action:  'backup-log',
+                    variant: 'primary'
                 });
             }
         }
-        $grid.append(createCard(__( 'Error Log', 'npc-site-doctor' ), data.error_log.status, logItems, 'error-log', logActions));
+        $grid.append(createCard(__( 'Error Log', 'npc-maintenance-inspector' ), data.error_log.status, logItems, 'error-log', logActions));
 
         // File integrity
         var integrityItems = [];
         var integrityStatus = data.file_integrity.status;
 
         if (data.file_integrity.has_danger) {
-            integrityItems.push(__( 'Suspicious code detected.', 'npc-site-doctor' ));
+            integrityItems.push(__( 'Suspicious code detected.', 'npc-maintenance-inspector' ));
             integrityStatus = 'critical';
         } else if (data.file_integrity.modified_count > 0) {
-            integrityItems.push(sprintf(__( 'Modified files: %d', 'npc-site-doctor' ), data.file_integrity.modified_count));
-            integrityItems.push(__( 'Suspicious code: none.', 'npc-site-doctor' ));
+            integrityItems.push(sprintf(__( 'Modified files: %d', 'npc-maintenance-inspector' ), data.file_integrity.modified_count));
+            integrityItems.push(__( 'Suspicious code: none.', 'npc-maintenance-inspector' ));
         } else if (data.file_integrity.suspect_count > 0) {
-            integrityItems.push(__( 'No issues with core files.', 'npc-site-doctor' ));
-            integrityItems.push(sprintf(__( 'Checksum mismatches: %d (no suspicious code, safe).', 'npc-site-doctor' ), data.file_integrity.suspect_count));
+            integrityItems.push(__( 'No issues with core files.', 'npc-maintenance-inspector' ));
+            integrityItems.push(sprintf(__( 'Checksum mismatches: %d (no suspicious code, safe).', 'npc-maintenance-inspector' ), data.file_integrity.suspect_count));
             integrityStatus = 'ok';
         } else {
-            integrityItems.push(__( 'No changes to core files.', 'npc-site-doctor' ));
+            integrityItems.push(__( 'No changes to core files.', 'npc-maintenance-inspector' ));
         }
 
-        $grid.append(createCard(__( 'File Integrity', 'npc-site-doctor' ), integrityStatus, integrityItems));
+        $grid.append(createCard(__( 'File Integrity', 'npc-maintenance-inspector' ), integrityStatus, integrityItems));
 
         // Suspicious files
-        $grid.append(createCard(__( 'Suspicious Files', 'npc-site-doctor' ), data.suspicious_files.status, [
+        $grid.append(createCard(__( 'Suspicious Files', 'npc-maintenance-inspector' ), data.suspicious_files.status, [
             data.suspicious_files.suspicious_count === 0
-                ? __( 'None detected.', 'npc-site-doctor' )
-                : sprintf(__( '%d suspicious file(s) detected.', 'npc-site-doctor' ), data.suspicious_files.suspicious_count)
+                ? __( 'None detected.', 'npc-maintenance-inspector' )
+                : sprintf(__( '%d suspicious file(s) detected.', 'npc-maintenance-inspector' ), data.suspicious_files.suspicious_count)
         ]));
 
         // SSL
         var sslItems = [];
         if (data.ssl_certificate.expires_at) {
-            sslItems.push(sprintf(__( 'Expires: %s', 'npc-site-doctor' ), data.ssl_certificate.expires_at));
-            sslItems.push(sprintf(__( '%d days remaining', 'npc-site-doctor' ), data.ssl_certificate.days_left));
+            sslItems.push(sprintf(__( 'Expires: %s', 'npc-maintenance-inspector' ), data.ssl_certificate.expires_at));
+            sslItems.push(sprintf(__( '%d days remaining', 'npc-maintenance-inspector' ), data.ssl_certificate.days_left));
         }
         if (data.ssl_certificate.note) {
             sslItems.push(data.ssl_certificate.note);
         }
-        $grid.append(createCard(__( 'SSL Certificate', 'npc-site-doctor' ), data.ssl_certificate.status, sslItems));
+        $grid.append(createCard(__( 'SSL Certificate', 'npc-maintenance-inspector' ), data.ssl_certificate.status, sslItems));
 
         // File permissions
         var permItems = data.file_permissions.checks.map(function(c) {
             var mark = c.status === 'ok' ? '✓' : '✗';
             return mark + ' ' + c.path + ': ' + c.current;
         });
-        $grid.append(createCard(__( 'File Permissions', 'npc-site-doctor' ), data.file_permissions.status, permItems));
+        $grid.append(createCard(__( 'File Permissions', 'npc-maintenance-inspector' ), data.file_permissions.status, permItems));
 
         $('#npc-results').show();
     }
@@ -340,9 +340,9 @@
         }
 
         var subtitleMap = {
-            ok: __( 'The site is in good health.', 'npc-site-doctor' ),
-            warning: __( 'Some minor items need attention.', 'npc-site-doctor' ),
-            critical: __( 'There are items that require immediate attention.', 'npc-site-doctor' )
+            ok: __( 'The site is in good health.', 'npc-maintenance-inspector' ),
+            warning: __( 'Some minor items need attention.', 'npc-maintenance-inspector' ),
+            critical: __( 'There are items that require immediate attention.', 'npc-maintenance-inspector' )
         };
 
         var segments = '';
@@ -355,11 +355,11 @@
         });
 
         var dateHtml = dateLabel
-            ? '<div class="npc-summary-date">' + escapeHtml(__( 'Diagnosed at:', 'npc-site-doctor' ))
+            ? '<div class="npc-summary-date">' + escapeHtml(__( 'Diagnosed at:', 'npc-maintenance-inspector' ))
                 + ' <strong>' + escapeHtml(dateLabel) + '</strong></div>'
             : '';
 
-        var subtitleText = sprintf(__( '%1$s (checked %2$d items)', 'npc-site-doctor' ),
+        var subtitleText = sprintf(__( '%1$s (checked %2$d items)', 'npc-maintenance-inspector' ),
             subtitleMap[gradeClass], total);
 
         var html = '<div class="npc-summary-card npc-summary-card--' + gradeClass + '">'
@@ -369,14 +369,14 @@
             + '</div>'
             + '<div class="npc-summary-body">'
             +   '<div class="npc-summary-head">'
-            +     '<h2 class="npc-summary-title">' + escapeHtml(__( 'Overall Diagnosis', 'npc-site-doctor' )) + '</h2>'
+            +     '<h2 class="npc-summary-title">' + escapeHtml(__( 'Overall Diagnosis', 'npc-maintenance-inspector' )) + '</h2>'
             +     dateHtml
             +   '</div>'
             +   '<p class="npc-summary-subtitle">' + escapeHtml(subtitleText) + '</p>'
             +   '<div class="npc-count-pills">'
-            +     countPill('critical', __( 'Critical', 'npc-site-doctor' ), counts.critical)
-            +     countPill('warning', __( 'Warning', 'npc-site-doctor' ), counts.warning)
-            +     countPill('ok', __( 'OK', 'npc-site-doctor' ), counts.ok)
+            +     countPill('critical', __( 'Critical', 'npc-maintenance-inspector' ), counts.critical)
+            +     countPill('warning', __( 'Warning', 'npc-maintenance-inspector' ), counts.warning)
+            +     countPill('ok', __( 'OK', 'npc-maintenance-inspector' ), counts.ok)
             +   '</div>'
             +   '<div class="npc-progress-bar">' + segments + '</div>'
             + '</div>'
@@ -449,11 +449,11 @@
 
             sectionContent = sectionContent
                 .replace(/\[STATUS:critical\]/g, '<span class="npc-badge npc-badge--critical">'
-                    + escapeHtml(__( 'Critical', 'npc-site-doctor' )) + '</span> ')
+                    + escapeHtml(__( 'Critical', 'npc-maintenance-inspector' )) + '</span> ')
                 .replace(/\[STATUS:warning\]/g, '<span class="npc-badge npc-badge--warning">'
-                    + escapeHtml(__( 'Warning', 'npc-site-doctor' )) + '</span> ')
+                    + escapeHtml(__( 'Warning', 'npc-maintenance-inspector' )) + '</span> ')
                 .replace(/\[STATUS:ok\]/g, '<span class="npc-badge npc-badge--ok">'
-                    + escapeHtml(__( 'OK', 'npc-site-doctor' )) + '</span> ');
+                    + escapeHtml(__( 'OK', 'npc-maintenance-inspector' )) + '</span> ');
 
             var sectionHtml = markdownToHtml(sectionContent);
 
@@ -473,7 +473,7 @@
      * Convert the [SECTION:action] body into action cards.
      */
     function renderActionSection(content) {
-        var heading = __( 'Action Steps', 'npc-site-doctor' );
+        var heading = __( 'Action Steps', 'npc-maintenance-inspector' );
         var headingMatch = content.match(/^##\s+(.+)$/m);
         if (headingMatch) {
             heading = headingMatch[1].trim();
@@ -500,9 +500,9 @@
             var title = lines[0].replace(/^\*\*(.+?)\*\*$/, '$1').trim();
             var rest = lines.slice(1).join('\n').trim();
             var badgeLabel = {
-                critical: __( 'Critical', 'npc-site-doctor' ),
-                warning: __( 'Warning', 'npc-site-doctor' ),
-                ok: __( 'OK', 'npc-site-doctor' )
+                critical: __( 'Critical', 'npc-maintenance-inspector' ),
+                warning: __( 'Warning', 'npc-maintenance-inspector' ),
+                ok: __( 'OK', 'npc-maintenance-inspector' )
             }[item.status];
 
             html += '<div class="npc-action-card npc-action-card--' + item.status + '">'
@@ -551,7 +551,7 @@
             var reportHtml = log.report
                 ? buildReportHtml(log.report, null)
                 : '<div class="npc-report-section npc-report-section--empty"><p>'
-                    + escapeHtml(__( 'AI report not yet generated.', 'npc-site-doctor' )) + '</p></div>';
+                    + escapeHtml(__( 'AI report not yet generated.', 'npc-maintenance-inspector' )) + '</p></div>';
             downloadReport(log.results, log.report, log.date, reportHtml);
         });
     }
@@ -570,21 +570,21 @@
 
         var $details = $('<details class="npc-history-item npc-history-item--' + gradeClass + '"></details>');
 
-        var dateLabel = sprintf(__( 'Diagnosis from %s', 'npc-site-doctor' ), log.date);
+        var dateLabel = sprintf(__( 'Diagnosis from %s', 'npc-maintenance-inspector' ), log.date);
 
         var summaryBar = '<summary class="npc-history-summary">'
             + '<span class="npc-history-grade npc-history-grade--' + gradeClass + '">' + escapeHtml(grade) + '</span>'
             + '<span class="npc-history-date">' + escapeHtml(dateLabel) + '</span>'
             + '<span class="npc-history-counts">'
             +   '<span class="npc-history-count npc-history-count--critical">'
-            +     escapeHtml(__( 'Critical', 'npc-site-doctor' )) + ' ' + counts.critical + '</span>'
+            +     escapeHtml(__( 'Critical', 'npc-maintenance-inspector' )) + ' ' + counts.critical + '</span>'
             +   '<span class="npc-history-count npc-history-count--warning">'
-            +     escapeHtml(__( 'Warning', 'npc-site-doctor' )) + ' ' + counts.warning + '</span>'
+            +     escapeHtml(__( 'Warning', 'npc-maintenance-inspector' )) + ' ' + counts.warning + '</span>'
             +   '<span class="npc-history-count npc-history-count--ok">'
-            +     escapeHtml(__( 'OK', 'npc-site-doctor' )) + ' ' + counts.ok + '</span>'
+            +     escapeHtml(__( 'OK', 'npc-maintenance-inspector' )) + ' ' + counts.ok + '</span>'
             + '</span>'
             + '<button type="button" class="button button-small npc-history-download" data-log-id="' + log.id + '">'
-            +   escapeHtml(__( 'Download', 'npc-site-doctor' )) + '</button>'
+            +   escapeHtml(__( 'Download', 'npc-maintenance-inspector' )) + '</button>'
             + '</summary>';
 
         var bodyHtml = '<div class="npc-history-body">';
@@ -592,7 +592,7 @@
             bodyHtml += buildReportHtml(log.report, null);
         } else {
             bodyHtml += '<div class="npc-report-section npc-report-section--empty"><p>'
-                + escapeHtml(__( 'This diagnosis has no AI report (results only).', 'npc-site-doctor' ))
+                + escapeHtml(__( 'This diagnosis has no AI report (results only).', 'npc-maintenance-inspector' ))
                 + '</p></div>';
         }
         bodyHtml += '</div>';
@@ -617,13 +617,13 @@
         // Going through results.site_info.site_name has caused title encoding issues before.
         var siteName = (window.npcSiteDoctor && window.npcSiteDoctor.siteName)
             || (results && results.site_info && results.site_info.site_name)
-            || __( 'Site', 'npc-site-doctor' );
+            || __( 'Site', 'npc-maintenance-inspector' );
         var date = (dateLabel || new Date().toISOString().slice(0, 10)).replace(/[: ]/g, '-');
 
-        var titleStr = sprintf(__( '%1$s Maintenance Report %2$s', 'npc-site-doctor' ),
+        var titleStr = sprintf(__( '%1$s Maintenance Report %2$s', 'npc-maintenance-inspector' ),
             siteName, date);
-        var heading  = sprintf(__( '%s — Maintenance Report', 'npc-site-doctor' ), siteName);
-        var meta     = sprintf(__( 'Diagnosed at: %s', 'npc-site-doctor' ), dateLabel || '');
+        var heading  = sprintf(__( '%s — Maintenance Report', 'npc-maintenance-inspector' ), siteName);
+        var meta     = sprintf(__( 'Diagnosed at: %s', 'npc-maintenance-inspector' ), dateLabel || '');
 
         var html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">'
             + '<title>' + escapeHtml(titleStr) + '</title>'
@@ -631,7 +631,7 @@
             + '<h1>' + escapeHtml(heading) + '</h1>'
             + '<p class="meta">' + escapeHtml(meta) + '</p>'
             + reportHtml
-            + '<div class="footer">Generated by NPC Site Doctor</div>'
+            + '<div class="footer">Generated by NPC Maintenance Inspector</div>'
             + '</body></html>';
 
         var blob = new Blob([html], { type: 'text/html' });
@@ -720,11 +720,11 @@
      */
     function createCard(title, status, items, cardId, actions) {
         var badgeLabel = {
-            ok: __( 'OK', 'npc-site-doctor' ),
-            warning: __( 'Warning', 'npc-site-doctor' ),
-            critical: __( 'Critical', 'npc-site-doctor' ),
-            unknown: __( 'Unknown', 'npc-site-doctor' ),
-            update_available: __( 'Update available', 'npc-site-doctor' )
+            ok: __( 'OK', 'npc-maintenance-inspector' ),
+            warning: __( 'Warning', 'npc-maintenance-inspector' ),
+            critical: __( 'Critical', 'npc-maintenance-inspector' ),
+            unknown: __( 'Unknown', 'npc-maintenance-inspector' ),
+            update_available: __( 'Update available', 'npc-maintenance-inspector' )
         };
         var cardStatus = (status === 'update_available') ? 'warning' : status;
         var dataAttr = cardId ? ' data-card-id="' + escapeHtml(cardId) + '"' : '';
@@ -813,7 +813,7 @@
             currentLog.date    = latest.date;
 
             if (latest.results) {
-                $('#npc-report-title').text(__( 'Previous AI Report', 'npc-site-doctor' ));
+                $('#npc-report-title').text(__( 'Previous AI Report', 'npc-maintenance-inspector' ));
                 renderResults(latest.results, latest.date);
             }
             if (latest.report) {
